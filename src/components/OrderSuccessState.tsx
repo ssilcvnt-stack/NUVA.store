@@ -5,6 +5,7 @@
 
 import React from "react";
 import { Check, Download, AlertCircle, ShoppingBag, Truck, Printer } from "lucide-react";
+import { jsPDF } from "jspdf";
 import { Order } from "../types";
 import { formatPrice } from "../data";
 
@@ -20,13 +21,135 @@ export function OrderSuccessState({
   onTrackOrder
 }: OrderSuccessProps) {
   
-  const downloadReceipt = async () => {
-    try {
-      window.print();
-    } catch (e) {
-      console.error(e);
-      alert("Ocorreu um erro ao gerar o documento.");
-    }
+  const downloadReceipt = () => {
+    const doc = new jsPDF();
+    
+    // Configurações de layout
+    const margin = 20;
+    let currentY = 20;
+    
+    // Helper function for adding left & right text on the same line
+    const addRow = (label: string, value: string, yPos: number, isBold: boolean = false) => {
+      doc.setFont("helvetica", isBold ? "bold" : "normal");
+      doc.setFontSize(isBold ? 11 : 10);
+      doc.text(label, margin, yPos);
+      const valueWidth = doc.getTextWidth(value);
+      doc.text(value, doc.internal.pageSize.width - margin - valueWidth, yPos);
+    };
+
+    // Header
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("NUVA", margin, currentY);
+    currentY += 8;
+    
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text("Less. Better.", margin, currentY);
+    currentY += 15;
+
+    // Line separator
+    doc.setDrawColor(200, 200, 200);
+    doc.line(margin, currentY, doc.internal.pageSize.width - margin, currentY);
+    currentY += 15;
+
+    // Resumo do recibo
+    doc.setTextColor(0, 0, 0);
+    addRow("RECIBO:", order.id, currentY, true);
+    currentY += 7;
+    addRow("DATA:", order.createdAt, currentY);
+    currentY += 7;
+    addRow("PAGAMENTO:", order.customerInfo.paymentMethod === "mbway" ? "MULTICAIXA EXPRESS" : "CARTÃO / CHECKOUT DIRETO", currentY);
+    currentY += 7;
+    addRow("LOGÍSTICA:", order.trackingNumber, currentY);
+    currentY += 15;
+
+    // Line separator
+    doc.line(margin, currentY, doc.internal.pageSize.width - margin, currentY);
+    currentY += 15;
+
+    // Informação do cliente
+    doc.setFont("helvetica", "bold");
+    doc.text("INFORMAÇÕES DO CLIENTE", margin, currentY);
+    currentY += 8;
+    doc.setFont("helvetica", "normal");
+    doc.text(`Nome: ${order.customerInfo.firstName} ${order.customerInfo.lastName}`, margin, currentY);
+    currentY += 6;
+    doc.text(`Email: ${order.customerInfo.email}`, margin, currentY);
+    currentY += 6;
+    doc.text(`Telefone: ${order.customerInfo.phone}`, margin, currentY);
+    currentY += 6;
+    doc.text(`Morada: ${order.customerInfo.address}, ${order.customerInfo.city}, ${order.customerInfo.country}`, margin, currentY);
+    currentY += 15;
+
+    // Line separator
+    doc.line(margin, currentY, doc.internal.pageSize.width - margin, currentY);
+    currentY += 15;
+
+    // Items Header
+    doc.setFont("helvetica", "bold");
+    doc.text("ARTIGOS ADQUIRIDOS", margin, currentY);
+    currentY += 10;
+    
+    // Items
+    doc.setFont("helvetica", "normal");
+    order.items.forEach((item) => {
+      const itemPrice = item.selectedColor.priceOverride || item.product.price;
+      const itemName = `${item.quantity}x ${item.product.name}`;
+      const itemOptions = `(Cor: ${item.selectedColor.name} | Tam: ${item.selectedSize})`;
+      const itemTotal = formatPrice(itemPrice * item.quantity);
+      
+      doc.text(itemName, margin, currentY);
+      doc.text(itemTotal, doc.internal.pageSize.width - margin - doc.getTextWidth(itemTotal), currentY);
+      currentY += 6;
+      doc.setTextColor(100, 100, 100);
+      doc.text(itemOptions, margin + 5, currentY);
+      doc.setTextColor(0, 0, 0);
+      currentY += 8;
+    });
+
+    currentY += 5;
+    // Line separator
+    doc.line(margin, currentY, doc.internal.pageSize.width - margin, currentY);
+    currentY += 15;
+
+    // Valores financeiros
+    addRow("Subtotal:", formatPrice(order.subtotal), currentY);
+    currentY += 7;
+    addRow("Portes de Envio:", order.shipping === 0 ? "GRATUITO" : formatPrice(order.shipping), currentY);
+    currentY += 7;
+    addRow("Impostos Locais:", formatPrice(order.tax), currentY);
+    currentY += 10;
+    
+    // Total Line
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(12);
+    addRow("TOTAL INVESTIDO:", formatPrice(order.total), currentY, true);
+    currentY += 15;
+
+    // Footer
+    currentY += 10;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(9);
+    doc.setTextColor(150, 150, 150);
+    const footerText = "O essencial nunca sai de moda. Obrigado por apoiar a produção consciente.";
+    const footerWidth = doc.getTextWidth(footerText);
+    doc.text(footerText, (doc.internal.pageSize.width - footerWidth) / 2, currentY);
+
+    currentY += 10;
+    doc.setFont("helvetica", "normal");
+    const contactText = "Apoio ao Cliente: nuva2026@proton.me  |  +244 941429171";
+    const contactWidth = doc.getTextWidth(contactText);
+    doc.text(contactText, (doc.internal.pageSize.width - contactWidth) / 2, currentY);
+
+    currentY += 6;
+    const socialText = "IG: @brancodiamante.joalheria  |  FB: /nuva.sho";
+    const socialWidth = doc.getTextWidth(socialText);
+    doc.text(socialText, (doc.internal.pageSize.width - socialWidth) / 2, currentY);
+
+    // Save PDF
+    doc.save(`receita-nuva-${order.id}.pdf`);
   };
 
   return (

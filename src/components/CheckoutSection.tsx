@@ -30,7 +30,11 @@ export function CheckoutSection({
   const [country, setCountry] = useState("Angola");
 
   // Payment choice
-  const [paymentMethod, setPaymentMethod] = useState<"vanqir" | "transfer" | "cash">("vanqir");
+  const [paymentMethod, setPaymentMethod] = useState<"mbway" | "card" | "transfer">("mbway");
+  const [mbwayPhone, setMbwayPhone] = useState("");
+  const [cardNumber, setCardNumber] = useState("");
+  const [cardExpiry, setCardExpiry] = useState("");
+  const [cardCvc, setCardCvc] = useState("");
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState("");
@@ -43,15 +47,6 @@ export function CheckoutSection({
   const total = subtotal + shipping;
   const tax = total - (total / 1.14);
 
-  const getVanqirUrl = () => {
-    const firstItem = cartItems[0];
-    if (!firstItem) return "";
-    if (firstItem.selectedColor.id === "lightblue") {
-      return "https://pay.vanqir.com/checkout/9fcbf922-76d8-48d4-8102-8f9383fc096e";
-    }
-    return "https://pay.vanqir.com/checkout/7ebd4a79-d289-47a6-99b1-f799e8e35d76";
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError(null);
@@ -61,71 +56,73 @@ export function CheckoutSection({
       return;
     }
 
-    if (paymentMethod === "vanqir") {
-      setLoadingStep("A associar pedido ao portal Vanqir...");
-    } else if (paymentMethod === "transfer") {
-      setLoadingStep("A associar transferência ao lote de fabrico...");
-    } else {
-      setLoadingStep("A processar pedido para pagamento na entrega...");
+    if (paymentMethod === "mbway" && !mbwayPhone) {
+      setValidationError("Por favor indique o número de telemóvel associado ao Multicaixa Express.");
+      return;
+    }
+
+    if (paymentMethod === "card") {
+      // Simulando a obtenção de um token gerado pelo iframe do gateway
     }
 
     setIsLoading(true);
+    setLoadingStep("A encriptar ligação SSL...");
 
     setTimeout(() => {
-      setLoadingStep("A gerar recibo eletrónico certificado pela AGT (Angola)...");
-      
+      if (paymentMethod === "mbway") {
+        setLoadingStep("A enviar notificação para o seu aplicativo Multicaixa Express...");
+      } else if (paymentMethod === "card") {
+        setLoadingStep("A processar transação com a rede Multicaixa / Visa...");
+      } else {
+        setLoadingStep("A associar transferência ao lote de fabrico...");
+      }
+
       setTimeout(() => {
-        setIsLoading(false);
+        setLoadingStep("A gerar recibo eletrónico certificado pela AGT (Angola)...");
+        
+        setTimeout(() => {
+          setIsLoading(false);
 
-        const customerInfo: CustomerInfo = {
-          firstName,
-          lastName,
-          email,
-          phone,
-          address,
-          city,
-          postalCode,
-          country,
-          paymentMethod,
-        };
+          const customerInfo: CustomerInfo = {
+            firstName,
+            lastName,
+            email,
+            phone,
+            address,
+            city,
+            postalCode,
+            country,
+            paymentMethod,
+            mbwayPhone,
+            cardNumber: paymentMethod === "card" ? `•••• •••• •••• 4242` : undefined,
+            cardExpiry: "12/28",
+            cardCvc: "***"
+          };
 
-        const checkoutData = {
-          customerInfo,
-          items: cartItems
-        };
+          const orderId = `NUVA-${Math.floor(1000 + Math.random() * 9000)}`;
+          const trackingNumber = `NV-${Math.floor(10000 + Math.random() * 90000)}`;
 
-        const executeCheckout = async () => {
-          try {
-            // Simulated backend process for static Vercel deployment
-            const orderId = `NUVA-${Math.floor(1000 + Math.random() * 9000)}`;
-            const trackingNumber = `NV-${Math.floor(10000 + Math.random() * 90000)}`;
-            
-            const orderData: Order = {
-              id: orderId,
-              uid: "guest",
-              customerInfo,
-              subtotal,
-              shipping,
-              tax,
-              total,
-              status: paymentMethod === "transfer" ? "pending" : "paid",
-              trackingNumber,
-              items: cartItems,
-              createdAt: new Date().toISOString()
-            };
+          const newOrder: Order = {
+            id: orderId,
+            items: [...cartItems],
+            customerInfo,
+            subtotal,
+            shipping,
+            tax,
+            total,
+            createdAt: new Date().toLocaleDateString("pt-PT", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit"
+            }),
+            status: paymentMethod === "transfer" ? "pending" : "paid",
+            trackingNumber
+          };
 
-            // Clear local cart
-            localStorage.removeItem("nuva_cart");
-
-            onOrderComplete(orderData);
-          } catch (err) {
-            console.error(err);
-            setValidationError("Erro de conexão ao processador de pagamentos.");
-          }
-        };
-
-        executeCheckout();
-
+          onOrderComplete(newOrder);
+        }, 1500);
       }, 1500);
     }, 1200);
   };
@@ -293,88 +290,114 @@ export function CheckoutSection({
               <div className="grid grid-cols-3 border border-neutral-200">
                 <button
                   type="button"
-                  onClick={() => setPaymentMethod("vanqir")}
-                  className={`py-3 px-2 text-center text-[10px] sm:text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "vanqir" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
-                  id="pay-vanqir-tab"
+                  onClick={() => setPaymentMethod("mbway")}
+                  className={`py-3 text-center text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "mbway" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
+                  id="pay-mbway-tab"
+                >
+                  <div className="flex items-center gap-1 font-bold font-mono">MCX</div>
+                  <span>MCX Express</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("card")}
+                  className={`py-3 text-center text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "card" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
+                  id="pay-card-tab"
                 >
                   <CreditCard className="h-4 w-4" />
-                  <span>Pagamento Online</span>
+                  <span>Cartão</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("transfer")}
-                  className={`py-3 px-2 text-center text-[10px] sm:text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "transfer" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
+                  className={`py-3 text-center text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "transfer" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
                   id="pay-transfer-tab"
                 >
                   <Landmark className="h-4 w-4" />
-                  <span>Transferência Bancária</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentMethod("cash")}
-                  className={`py-3 px-2 text-center text-[10px] sm:text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "cash" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
-                  id="pay-cash-tab"
-                >
-                  <div className="flex items-center gap-1 font-bold font-mono">Kz</div>
-                  <span>Pagamento na Entrega</span>
+                  <span>TRF Bancária</span>
                 </button>
               </div>
 
               {/* Payment Content panels */}
-              <div className="p-0 border border-neutral-200 bg-neutral-50/70 min-h-[140px] flex items-center">
-                {paymentMethod === "vanqir" && (
-                  <div className="w-full h-[550px]">
-                    <iframe 
-                      src={getVanqirUrl()} 
-                      width="100%" 
-                      height="100%" 
-                      frameBorder="0" 
-                      allow="payment"
-                      title="Pagamento Seguro Vanqir"
-                      className="bg-white"
-                    />
+              <div className="p-5 border border-neutral-200 bg-neutral-50/70 min-h-[140px] flex items-center">
+                {paymentMethod === "mbway" && (
+                  <div className="w-full space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-mono text-[10px] uppercase font-semibold text-neutral-900">
+                        Pagamento Instantâneo via Multicaixa Express
+                      </h4>
+                      <span className="text-[9px] font-mono text-neutral-400">ISENTO DE TAXAS</span>
+                    </div>
+                    <p className="text-[11px] text-neutral-500 font-sans">
+                      Insira o seu número de telemóvel nacional de Angola (9xx). Enviaremos um pedido de autorização do valor exato de <strong>{formatPrice(total)}</strong> que aparecerá instantaneamente no seu telemóvel na app Multicaixa Express. Tem 5 minutos para autorizar.
+                    </p>
+                    <div className="max-w-xs relative">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400">
+                        <PhoneCall className="h-3.5 w-3.5" />
+                      </span>
+                      <input
+                        type="tel"
+                        placeholder="Ex: 912345678"
+                        value={mbwayPhone}
+                        onChange={(e) => setMbwayPhone(e.target.value)}
+                        className="w-full bg-white border border-neutral-200 py-2.5 pl-10 pr-3 text-xs font-mono tracking-widest focus:outline-none focus:border-black transition-all"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {paymentMethod === "card" && (
+                  <div className="w-full space-y-4">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-sans font-semibold text-xs mb-1">
+                        Iframe de Pagamento Direto Seguro (Gateway)
+                      </h4>
+                      <span className="text-[9px] font-mono text-neutral-400">VIA STRIPE / VISA / MASTERCARD</span>
+                    </div>
+                    
+                    <div className="space-y-3">
+                      {/* Secure Iframe Container Simulation */}
+                      <div className="bg-white border border-neutral-200 relative overflow-hidden rounded-sm h-[220px] flex items-center justify-center bg-neutral-50 border-dashed">
+                        <div className="text-center p-6">
+                            <span className="block text-[10px] tracking-widest uppercase font-mono text-neutral-400 mb-2">Módulo Gateway</span>
+                            <p className="text-xs text-neutral-500 font-sans leading-relaxed">
+                                Gateway de pagamento direto preparado.<br/>
+                                <strong>Aguardando chaves e configurações (ex: Stripe, E-Kwanza).</strong><br/>
+                                Envie os parâmetros para conectar a API e renderizar o componente oficial.
+                            </p>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-neutral-400 font-sans leading-relaxed">
+                        Este é um iframe de Payment Gateway (ex: Stripe Elements, E-Kwanza Celo). Os dados do cartão são recolhidos de forma segura e não tocam nos nossos servidores, garantindo total conformidade com o PCI-DSS.
+                      </p>
+                    </div>
                   </div>
                 )}
 
                 {paymentMethod === "transfer" && (
-                  <div className="w-full space-y-3 p-5">
+                  <div className="w-full space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-mono text-[10px] uppercase font-semibold text-neutral-900">
-                        Transferência Bancária (Directa)
+                        Garantia de Fabrico Manual sob Transferência
                       </h4>
                       <span className="text-[9px] font-mono text-neutral-400">PROCESSAMENTO EM 24H</span>
                     </div>
                     <p className="text-[11px] text-neutral-500 font-sans leading-relaxed">
-                      Efetue transferência bancária para o IBAN abaixo e envie o comprovativo para <strong>vendas@nuva.com</strong>.
+                      Efetue transferência bancária para o IBAN abaixo e envie o comprovativo para <strong>vendas@nuva.com</strong> identificando o código de encomenda. A sua reserva estará ativa por 48 horas.
                     </p>
                     <div className="bg-white p-3 border border-neutral-200 space-y-1 text-xs font-mono selection:bg-neutral-100">
-                      <div className="flex justify-between items-center">
+                      <div className="flex justify-between">
                         <span className="text-neutral-400">BANCO:</span>
-                        <span className="font-semibold text-black text-[10px]">BANCO MILLENNIUM ATLANTICO</span>
+                        <span className="font-semibold text-black">BAI (BANCO ANGOLANO DE INVESTIMENTO)</span>
                       </div>
-                      <div className="flex justify-between items-center mt-2 pt-2 border-t border-neutral-100">
+                      <div className="flex justify-between">
                         <span className="text-neutral-400">IBAN:</span>
-                        <span className="font-semibold text-black tracking-wider text-[11px] select-all">AO06 0055 0000 5957 4524 101 77</span>
+                        <span className="font-semibold text-black tracking-wider text-[11px]">AO06 0040 0000 7824 1029 1014 9</span>
                       </div>
-                      <div className="flex justify-between items-center mt-2 pt-2 border-t border-neutral-100">
+                      <div className="flex justify-between">
                         <span className="text-neutral-400">BENEFICIÁRIO:</span>
-                        <span className="font-semibold text-black text-[10px]">AUGUSTO SOBRINHO DA SILVA COSTA</span>
+                        <span className="font-semibold text-black">NUVA LABS ANGOLA</span>
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {paymentMethod === "cash" && (
-                  <div className="w-full space-y-3 p-5">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-mono text-[10px] uppercase font-semibold text-neutral-900">
-                        Pagamento no Acto da Entrega
-                      </h4>
-                      <span className="text-[9px] font-mono text-neutral-400">EM LUANDA</span>
-                    </div>
-                    <p className="text-[11px] text-neutral-500 font-sans leading-relaxed">
-                      Efectua o pagamento em dinheiro ou via TPA apenas quando receberes a tua encomenda. Esta opção é válida exclusivamente para a área da cidade de Luanda.
-                    </p>
                   </div>
                 )}
               </div>
@@ -387,23 +410,23 @@ export function CheckoutSection({
                   {validationError}
                 </div>
               )}
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full bg-black hover:bg-neutral-900 text-white py-5 text-[11px] uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                  id="submit-payment-btn"
-                >
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin text-neutral-400" />
-                      <span>{loadingStep}</span>
-                    </>
-                  ) : (
-                    <>
-                      <span>{paymentMethod === "vanqir" ? "Registar Encomenda Nuva" : `Confirmar & Concluir Pedido ${formatPrice(total)}`}</span>
-                    </>
-                  )}
-                </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-full bg-black hover:bg-neutral-900 text-white py-5 text-[11px] uppercase tracking-[0.4em] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                id="submit-payment-btn"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin text-neutral-400" />
+                    <span>{loadingStep}</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Confirmar & Pagar {formatPrice(total)}</span>
+                  </>
+                )}
+              </button>
               
               <p className="text-[10px] text-neutral-400 text-center font-sans mt-3 leading-relaxed">
                 Ao clicar em confirmar, aceita os Termos e Condições Premium da NUVA Labs e declara-se ciente que as peças básicas serão processadas sob rígido padrão de alfaiataria em Guimarães e expedidas com entrega expresso em Luanda.

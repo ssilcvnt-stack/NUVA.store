@@ -25,7 +25,7 @@ export const PRODUCTS: Product[] = [
     id: "nuva-essential-tee",
     name: "T-Shirt NUVA Essential",
     tagline: "O Essencial Nunca Sai de Moda • 220 GSM",
-    price: 15990,
+    price: 39000,
     description: "A nossa t-shirt essencial combina materiais premium, construção impecável e caimento perfeito. Simples na aparência, superior em tudo o que importa. Ref: 42331377036.",
     details: [
       "Algodão Premium: 100% algodão penteado de alta qualidade para máximo conforto e durabilidade.",
@@ -63,6 +63,7 @@ export const PRODUCTS: Product[] = [
           "https://i.imgur.com/OyqBECh.png",
           "https://i.imgur.com/5MoRjuB.png"
         ],
+        priceOverride: 41560,
         isPreOrder: true
       },
       {

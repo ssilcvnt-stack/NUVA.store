@@ -20,8 +20,7 @@ import {
   Sparkles,
   Info,
   Check,
-  Mail,
-  User as UserIcon
+  Mail
 } from "lucide-react";
 
 import { Logo, MiniLogo } from "./components/Logo";
@@ -31,43 +30,18 @@ import { ProductDetailDrawer } from "./components/ProductDetailDrawer";
 import { CheckoutSection } from "./components/CheckoutSection";
 import { OrderSuccessState } from "./components/OrderSuccessState";
 import { OrderTracking } from "./components/OrderTracking";
-import { NewsletterModal } from "./components/NewsletterModal";
-import { ContactForm } from "./components/ContactForm";
+import { NewsletterSection } from "./components/NewsletterSection";
 
 import { PRODUCTS, BRAND_VALUES, IMAGES, SIZE_TABLE, formatPrice } from "./data";
 import { Product, CartItem, ProductColor, Order } from "./types";
 
 export default function App() {
   // Navigation & Cart States
-  const [view, setView] = useState<"home" | "checkout" | "success" | "tracking" | "admin">("home");
+  const [view, setView] = useState<"home" | "checkout" | "success" | "tracking">("home");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
-
-  // Load cart from LocalStorage on mount
-  useEffect(() => {
-    try {
-      const savedCart = localStorage.getItem("nuva_cart");
-      if (savedCart) {
-        setCartItems(JSON.parse(savedCart));
-      }
-    } catch (e) {
-      console.error("Error loading cart from local storage:", e);
-    }
-  }, []);
-
-  // Sync cart to LocalStorage on change
-  const isInitialMount = useRef(true);
-  useEffect(() => {
-    if (isInitialMount.current) {
-       isInitialMount.current = false;
-       return;
-    }
-    localStorage.setItem("nuva_cart", JSON.stringify(cartItems));
-  }, [cartItems]);
-
   
   // Single product home-customization states
   const singleProduct = PRODUCTS[0];
@@ -176,28 +150,6 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleGoogleAuth = async () => {
-    if (user) {
-      await signOut(auth);
-    } else {
-      const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (error: any) {
-        console.error("Authentication error:", error);
-        if (error.code === 'auth/popup-blocked') {
-          alert('Popup blocked! Please allow popups or open this app in a new tab to login.');
-        } else if (error.code === 'auth/cancelled-popup-request' || error.code === 'auth/popup-closed-by-user') {
-          // Ignore safely
-        } else if (error.message && error.message.includes("INTERNAL ASSERTION FAILED")) {
-          alert("Ocorreu um erro interno de autenticação, possivelmente devido à execução em um iframe. Por favor, abra o aplicativo em uma nova aba para fazer o login.");
-        } else {
-          alert(`Authentication error: ${error.message}`);
-        }
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen bg-white text-black font-sans selection:bg-black selection:text-white flex flex-col justify-between" id="nuva-app-root">
       
@@ -246,16 +198,6 @@ export default function App() {
 
           {/* Actions & Utilities - Right */}
           <div className="flex items-center justify-end space-x-2 md:space-x-6">
-            <button
-              onClick={() => { alert('Área de cliente temporariamente suspensa para manutenção.'); }}
-              className={`relative p-2 transition-all duration-300 flex items-center justify-center ${
-                view === "home" && !isScrolled ? "text-white hover:opacity-60" : "text-black hover:bg-neutral-50 rounded"
-              }`}
-              title="Entrar"
-            >
-              <UserIcon className="h-5 w-5 stroke-[1.5]" />
-            </button>
-
             {/* Sizing Link for Mobile removed or handled */}
 
             {/* Shopping cart trigger */}
@@ -682,8 +624,12 @@ export default function App() {
               </div>
             </section>
 
+            {/* Newsletter Subscription block */}
+            <section className="max-w-6xl mx-auto px-4 sm:px-6 mt-16 md:mt-24 scroll-mt-24" id="newsletter-section">
+              <NewsletterSection />
+            </section>
+
             {/* Help desk & Sizing info FAQ Accordion */}
-            <ContactForm />
             <section className="max-w-3xl mx-auto px-4 mt-16 md:mt-24" id="faq-section">
               <div className="space-y-1 mb-8 text-center">
                 <span className="text-[10px] font-mono tracking-widest text-neutral-400 uppercase font-semibold block">
@@ -798,11 +744,7 @@ export default function App() {
           </div>
 
           {/* Newsletter button */}
-          <button 
-            type="button"
-            onClick={() => setIsNewsletterOpen(true)}
-            className="border border-neutral-300 hover:bg-neutral-200/50 bg-white text-neutral-800 font-sans text-xs flex items-center gap-2 px-6 py-2.5 transition-colors"
-          >
+          <button className="border border-neutral-300 hover:bg-neutral-200/50 bg-white text-neutral-800 font-sans text-xs flex items-center gap-2 px-6 py-2.5 transition-colors">
             <Mail className="h-3.5 w-3.5 text-neutral-500" />
             Boletim informativo oficial
           </button>
@@ -868,9 +810,6 @@ export default function App() {
           setIsSizeGuideOpen(true);
         }}
       />
-
-      {/* Newsletter Modal */}
-      <NewsletterModal isOpen={isNewsletterOpen} onClose={() => setIsNewsletterOpen(false)} />
 
     </div>
   );

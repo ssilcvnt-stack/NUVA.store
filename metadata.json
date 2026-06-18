@@ -1,5 +1,5 @@
 {
-  "name": "nuva-store",
+  "name": "NUVA Store",
   "description": "Premium basic t-shirts. Less. Better. Quiet luxury e-commerce with a smooth catalog and seamless direct checkout.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
