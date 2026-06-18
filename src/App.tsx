@@ -36,11 +36,6 @@ import { ContactForm } from "./components/ContactForm";
 
 import { PRODUCTS, BRAND_VALUES, IMAGES, SIZE_TABLE, formatPrice } from "./data";
 import { Product, CartItem, ProductColor, Order } from "./types";
-import { GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
-import type { User } from "firebase/auth";
-import { auth } from "./lib/firebase";
-
-import { AdminDashboard } from "./components/AdminDashboard";
 
 export default function App() {
   // Navigation & Cart States
@@ -50,56 +45,28 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isNewsletterOpen, setIsNewsletterOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
 
+  // Load cart from LocalStorage on mount
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      setUser(currentUser);
-      if (currentUser) {
-        // Load cart from persistent cloud backend
-        try {
-          const token = await currentUser.getIdToken();
-          const res = await fetch("/api/cart", {
-            headers: { Authorization: `Bearer ${token}` }
-          });
-          if (res.ok) {
-             const data = await res.json();
-             if (data.items) {
-               setCartItems(data.items);
-             }
-          }
-        } catch (e) { console.error("Error loading cart:", e); }
+    try {
+      const savedCart = localStorage.getItem("nuva_cart");
+      if (savedCart) {
+        setCartItems(JSON.parse(savedCart));
       }
-    });
-    return () => unsubscribe();
+    } catch (e) {
+      console.error("Error loading cart from local storage:", e);
+    }
   }, []);
 
-  // Sync cart strictly to the cloud backend on change
+  // Sync cart to LocalStorage on change
   const isInitialMount = useRef(true);
   useEffect(() => {
     if (isInitialMount.current) {
        isInitialMount.current = false;
        return;
     }
-    const syncCart = async () => {
-      if (user) {
-        try {
-          const token = await user.getIdToken();
-          await fetch("/api/cart", {
-             method: "POST",
-             headers: { 
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`
-             },
-             body: JSON.stringify({ items: cartItems })
-          });
-        } catch (e) {
-          console.error("Error syncing cart:", e);
-        }
-      }
-    };
-    syncCart();
-  }, [cartItems, user]);
+    localStorage.setItem("nuva_cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   
   // Single product home-customization states
@@ -275,30 +242,18 @@ export default function App() {
             >
               rastrear pedido
             </button>
-            {user?.email === "ssilcvnt@gmail.com" && (
-              <button 
-                type="button" 
-                onClick={() => { setView("admin"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
-                className="hover:opacity-70 transition-all font-semibold cursor-pointer text-amber-500"
-              >
-                hq admin
-              </button>
-            )}
           </nav>
 
           {/* Actions & Utilities - Right */}
           <div className="flex items-center justify-end space-x-2 md:space-x-6">
             <button
-              onClick={handleGoogleAuth}
+              onClick={() => { alert('Área de cliente temporariamente suspensa para manutenção.'); }}
               className={`relative p-2 transition-all duration-300 flex items-center justify-center ${
                 view === "home" && !isScrolled ? "text-white hover:opacity-60" : "text-black hover:bg-neutral-50 rounded"
               }`}
-              title={user ? `Logado como ${user.email} - Clique para sair` : "Entrar com Google"}
+              title="Entrar"
             >
               <UserIcon className="h-5 w-5 stroke-[1.5]" />
-              {user && (
-                <span className={`absolute top-1 right-1 h-1.5 w-1.5 rounded-full ${view === "home" && !isScrolled ? "bg-white" : "bg-black"}`} />
-              )}
             </button>
 
             {/* Sizing Link for Mobile removed or handled */}
@@ -812,21 +767,6 @@ export default function App() {
                 ← Voltar
               </button>
               <OrderTracking />
-            </div>
-          </div>
-        )}
-
-        {/* VIEW: ADMIN DASHBOARD */}
-        {view === "admin" && (
-          <div className="animate-fade-in py-12 md:py-24">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6">
-               <button 
-                 onClick={() => setView("home")}
-                 className="text-[10px] font-mono uppercase tracking-widest text-neutral-500 hover:text-black mb-8 flex items-center gap-2"
-               >
-                 ← Voltar
-               </button>
-               <AdminDashboard />
             </div>
           </div>
         )}

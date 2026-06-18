@@ -7,7 +7,6 @@ import React, { useState } from "react";
 import { ArrowLeft, CreditCard, PhoneCall, Landmark, ShieldCheck, Mail, Calendar, MapPin, Loader2 } from "lucide-react";
 import { CartItem, CustomerInfo, Order } from "../types";
 import { formatPrice } from "../data";
-import { auth } from "../lib/firebase";
 
 interface CheckoutSectionProps {
   cartItems: CartItem[];
@@ -97,26 +96,31 @@ export function CheckoutSection({
 
         const executeCheckout = async () => {
           try {
-            const headers: Record<string, string> = { "Content-Type": "application/json" };
-            if (auth.currentUser) {
-               headers["Authorization"] = `Bearer ${await auth.currentUser.getIdToken()}`;
-            }
-
-            const res = await fetch("/api/checkout", {
-               method: "POST",
-               headers,
-               body: JSON.stringify(checkoutData)
-            });
-            const data = await res.json();
+            // Simulated backend process for static Vercel deployment
+            const orderId = `NUVA-${Math.floor(1000 + Math.random() * 9000)}`;
+            const trackingNumber = `NV-${Math.floor(10000 + Math.random() * 90000)}`;
             
-            if (data.success) {
-               onOrderComplete(data.orderData);
-            } else {
-               setValidationError(data.error || "Ocorreu um erro no processamento.");
-            }
+            const orderData: Order = {
+              id: orderId,
+              uid: "guest",
+              customerInfo,
+              subtotal,
+              shipping,
+              tax,
+              total,
+              status: paymentMethod === "transfer" ? "pending" : "paid",
+              trackingNumber,
+              items: cartItems,
+              createdAt: new Date().toISOString()
+            };
+
+            // Clear local cart
+            localStorage.removeItem("nuva_cart");
+
+            onOrderComplete(orderData);
           } catch (err) {
             console.error(err);
-            setValidationError("Erro de conexão ao servidor seguro.");
+            setValidationError("Erro de conexão ao processador de pagamentos.");
           }
         };
 
