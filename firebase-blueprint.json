@@ -1,0 +1,91 @@
+{
+  "entities": {
+    "NewsletterSubscription": {
+      "title": "Newsletter Subscription",
+      "description": "User subscription to the newsletter",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "email", "createdAt"]
+    },
+    "Order": {
+      "title": "Order",
+      "description": "A completed checkout order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "customerInfo": {
+          "type": "object",
+          "properties": {
+            "firstName": { "type": "string" },
+            "lastName": { "type": "string" },
+            "email": { "type": "string" },
+            "phone": { "type": "string" },
+            "address": { "type": "string" },
+            "city": { "type": "string" },
+            "country": { "type": "string" },
+            "postalCode": { "type": "string" },
+            "paymentMethod": { "type": "string" },
+            "mbwayPhone": { "type": "string" },
+            "cardNumber": { "type": "string" },
+            "cardExpiry": { "type": "string" },
+            "cardCvc": { "type": "string" }
+          }
+        },
+        "items": {
+          "type": "array"
+        },
+        "subtotal": { "type": "number" },
+        "shipping": { "type": "number" },
+        "tax": { "type": "number" },
+        "total": { "type": "number" },
+        "status": { "type": "string" },
+        "trackingNumber": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "customerInfo", "items", "subtotal", "shipping", "tax", "total", "status", "createdAt"]
+    },
+    "Chat": {
+      "title": "Chat",
+      "description": "Customer support chat session",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "userName": { "type": "string" },
+        "messages": { "type": "array" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "updatedAt"]
+    },
+    "Cart": {
+      "title": "Cart",
+      "description": "User shopping cart",
+      "type": "object",
+      "properties": {
+        "items": { "type": "array" }
+      },
+      "required": ["items"]
+    }
+  },
+  "firestore": {
+    "newsletter/{subscriptionId}": {
+      "schema": { "$ref": "#/entities/NewsletterSubscription" },
+      "description": "Stores newsletter signups"
+    },
+    "orders/{orderId}": {
+       "schema": { "$ref": "#/entities/Order" },
+       "description": "Stores completed orders"
+    },
+    "chats/{chatId}": {
+       "schema": { "$ref": "#/entities/Chat" },
+       "description": "Stores active support chats"
+    },
+    "carts/{userId}": {
+       "schema": { "$ref": "#/entities/Cart" },
+       "description": "Stores user shopping carts"
+    }
+  }
+}

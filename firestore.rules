@@ -1,0 +1,53 @@
+rules_version = '2';
+// Main rules file
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global Safety Net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helpers
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+    function incoming() {
+      return request.resource.data;
+    }
+    function isValidNewsletter(data) {
+      return data.keys().hasAll(['name', 'email', 'createdAt']) && data.keys().size() == 3 &&
+             data.name is string && data.name.size() <= 100 &&
+             data.email is string && data.email.size() <= 100 &&
+             data.createdAt is timestamp;
+    }
+    function isValidOrder(data) {
+      return data.keys().hasAll(['id', 'customerInfo', 'items', 'subtotal', 'shipping', 'tax', 'total', 'status', 'createdAt', 'trackingNumber']) && data.keys().size() == 10 &&
+             data.id is string && data.id.size() <= 50 &&
+             data.status is string && data.status.size() <= 20 &&
+             data.createdAt is timestamp;
+    }
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.email == 'ssilcvnt@gmail.com';
+    }
+
+    match /newsletter/{subscriptionId} {
+      // Anyone can subscribe, no one can read
+      allow create: if true;
+      allow read, write: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      // Anyone can create an order, no one can read
+      allow create: if isValidId(orderId) && isValidOrder(incoming());
+      allow read, write: if isAdmin();
+    }
+    match /chats/{chatId} {
+      allow read, write: if true; // In a production app, secure this better
+    }
+    match /carts/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
