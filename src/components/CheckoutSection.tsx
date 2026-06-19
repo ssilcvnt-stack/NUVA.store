@@ -4,7 +4,7 @@
  */
 
 import React, { useState } from "react";
-import { ArrowLeft, CreditCard, PhoneCall, Landmark, ShieldCheck, Mail, Calendar, MapPin, Loader2 } from "lucide-react";
+import { ArrowLeft, CreditCard, PhoneCall, Landmark, ShieldCheck, Mail, Calendar, MapPin, Loader2, QrCode, Truck } from "lucide-react";
 import { CartItem, CustomerInfo, Order } from "../types";
 import { formatPrice } from "../data";
 
@@ -30,11 +30,7 @@ export function CheckoutSection({
   const [country, setCountry] = useState("Angola");
 
   // Payment choice
-  const [paymentMethod, setPaymentMethod] = useState<"mbway" | "card" | "transfer">("mbway");
-  const [mbwayPhone, setMbwayPhone] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<"vanqir_mcx" | "vanqir_ref" | "transfer" | "delivery">("vanqir_mcx");
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStep, setLoadingStep] = useState("");
@@ -56,29 +52,18 @@ export function CheckoutSection({
       return;
     }
 
-    if (paymentMethod === "mbway" && !mbwayPhone) {
-      setValidationError("Por favor indique o número de telemóvel associado ao Multicaixa Express.");
-      return;
-    }
-
-    if (paymentMethod === "card") {
-      // Simulando a obtenção de um token gerado pelo iframe do gateway
-    }
-
     setIsLoading(true);
-    setLoadingStep("A encriptar ligação SSL...");
+    setLoadingStep("A processar pedido...");
 
     setTimeout(() => {
-      if (paymentMethod === "mbway") {
-        setLoadingStep("A enviar notificação para o seu aplicativo Multicaixa Express...");
-      } else if (paymentMethod === "card") {
-        setLoadingStep("A processar transação com a rede Multicaixa / Visa...");
+      if (paymentMethod === "vanqir_mcx" || paymentMethod === "vanqir_ref") {
+        setLoadingStep("A preparar ambiente de pagamento...");
       } else {
-        setLoadingStep("A associar transferência ao lote de fabrico...");
+        setLoadingStep("A associar pedido ao lote de fabrico...");
       }
 
       setTimeout(() => {
-        setLoadingStep("A gerar recibo eletrónico certificado pela AGT (Angola)...");
+        setLoadingStep("A gerar recibo eletrónico...");
         
         setTimeout(() => {
           setIsLoading(false);
@@ -92,11 +77,7 @@ export function CheckoutSection({
             city,
             postalCode,
             country,
-            paymentMethod,
-            mbwayPhone,
-            cardNumber: paymentMethod === "card" ? `•••• •••• •••• 4242` : undefined,
-            cardExpiry: "12/28",
-            cardCvc: "***"
+            paymentMethod
           };
 
           const orderId = `NUVA-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -120,6 +101,13 @@ export function CheckoutSection({
             status: paymentMethod === "transfer" ? "pending" : "paid",
             trackingNumber
           };
+
+          // Trigger email via our internal secure express backend (no exposed secrets)
+          fetch('/api/send-order', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newOrder)
+          }).catch(err => console.error("Failed to trigger email webhook behind proxy:", err));
 
           onOrderComplete(newOrder);
         }, 1500);
@@ -287,89 +275,59 @@ export function CheckoutSection({
               </div>
 
               {/* Payment Select tabs */}
-              <div className="grid grid-cols-3 border border-neutral-200">
+              <div className="grid grid-cols-2 md:grid-cols-4 border border-neutral-200">
                 <button
                   type="button"
-                  onClick={() => setPaymentMethod("mbway")}
-                  className={`py-3 text-center text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "mbway" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
-                  id="pay-mbway-tab"
+                  onClick={() => setPaymentMethod("vanqir_mcx")}
+                  className={`py-3 text-center text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "vanqir_mcx" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
+                  id="pay-vanqir-mcx-tab"
                 >
                   <div className="flex items-center gap-1 font-bold font-mono">MCX</div>
                   <span>MCX Express</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setPaymentMethod("card")}
-                  className={`py-3 text-center text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "card" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
-                  id="pay-card-tab"
+                  onClick={() => setPaymentMethod("vanqir_ref")}
+                  className={`py-3 text-center text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "vanqir_ref" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
+                  id="pay-vanqir-ref-tab"
+                  style={{ borderLeft: '1px solid #e5e5e5' }}
                 >
-                  <CreditCard className="h-4 w-4" />
-                  <span>Cartão</span>
+                  <QrCode className="h-4 w-4" />
+                  <span>Referência</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod("transfer")}
-                  className={`py-3 text-center text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "transfer" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white"}`}
+                  className={`py-3 text-center text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "transfer" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white border-t md:border-t-0 md:border-l border-neutral-200"}`}
                   id="pay-transfer-tab"
                 >
                   <Landmark className="h-4 w-4" />
                   <span>TRF Bancária</span>
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setPaymentMethod("delivery")}
+                  className={`py-3 text-center text-[11px] font-mono uppercase tracking-wider flex flex-col items-center justify-center gap-1.5 transition-all ${paymentMethod === "delivery" ? "bg-black text-white" : "hover:bg-neutral-50 text-neutral-600 bg-white border-t md:border-t-0 md:border-l border-neutral-200"}`}
+                  id="pay-delivery-tab"
+                >
+                  <Truck className="h-4 w-4" />
+                  <span>Na Entrega</span>
+                </button>
               </div>
 
               {/* Payment Content panels */}
               <div className="p-5 border border-neutral-200 bg-neutral-50/70 min-h-[140px] flex items-center">
-                {paymentMethod === "mbway" && (
+                {(paymentMethod === "vanqir_mcx" || paymentMethod === "vanqir_ref") && (
                   <div className="w-full space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-mono text-[10px] uppercase font-semibold text-neutral-900">
-                        Pagamento Instantâneo via Multicaixa Express
+                        Pagamento Seguro ({paymentMethod === "vanqir_mcx" ? "MCX Express" : "Referência"})
                       </h4>
-                      <span className="text-[9px] font-mono text-neutral-400">ISENTO DE TAXAS</span>
+                      <span className="text-[9px] font-mono text-neutral-400">PAGAMENTO DIRETO</span>
                     </div>
-                    <p className="text-[11px] text-neutral-500 font-sans">
-                      Insira o seu número de telemóvel nacional de Angola (9xx). Enviaremos um pedido de autorização do valor exato de <strong>{formatPrice(total)}</strong> que aparecerá instantaneamente no seu telemóvel na app Multicaixa Express. Tem 5 minutos para autorizar.
+                    <p className="text-[11px] text-neutral-500 font-sans leading-relaxed">
+                      Ao clicar em confirmar, será redirecionado para a plataforma de pagamentos Vanqir para concluir o seu pagamento com total segurança usando {paymentMethod === "vanqir_mcx" ? "MCX Express" : "Pagamento por Referência"}. Os seus dados da encomenda serão associados automaticamente.
                     </p>
-                    <div className="max-w-xs relative">
-                      <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-neutral-400">
-                        <PhoneCall className="h-3.5 w-3.5" />
-                      </span>
-                      <input
-                        type="tel"
-                        placeholder="Ex: 912345678"
-                        value={mbwayPhone}
-                        onChange={(e) => setMbwayPhone(e.target.value)}
-                        className="w-full bg-white border border-neutral-200 py-2.5 pl-10 pr-3 text-xs font-mono tracking-widest focus:outline-none focus:border-black transition-all"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {paymentMethod === "card" && (
-                  <div className="w-full space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-sans font-semibold text-xs mb-1">
-                        Iframe de Pagamento Direto Seguro (Gateway)
-                      </h4>
-                      <span className="text-[9px] font-mono text-neutral-400">VIA STRIPE / VISA / MASTERCARD</span>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      {/* Secure Iframe Container Simulation */}
-                      <div className="bg-white border border-neutral-200 relative overflow-hidden rounded-sm h-[220px] flex items-center justify-center bg-neutral-50 border-dashed">
-                        <div className="text-center p-6">
-                            <span className="block text-[10px] tracking-widest uppercase font-mono text-neutral-400 mb-2">Módulo Gateway</span>
-                            <p className="text-xs text-neutral-500 font-sans leading-relaxed">
-                                Gateway de pagamento direto preparado.<br/>
-                                <strong>Aguardando chaves e configurações (ex: Stripe, E-Kwanza).</strong><br/>
-                                Envie os parâmetros para conectar a API e renderizar o componente oficial.
-                            </p>
-                        </div>
-                      </div>
-                      <p className="text-[10px] text-neutral-400 font-sans leading-relaxed">
-                        Este é um iframe de Payment Gateway (ex: Stripe Elements, E-Kwanza Celo). Os dados do cartão são recolhidos de forma segura e não tocam nos nossos servidores, garantindo total conformidade com o PCI-DSS.
-                      </p>
-                    </div>
                   </div>
                 )}
 
@@ -377,27 +335,41 @@ export function CheckoutSection({
                   <div className="w-full space-y-3">
                     <div className="flex items-center justify-between">
                       <h4 className="font-mono text-[10px] uppercase font-semibold text-neutral-900">
-                        Garantia de Fabrico Manual sob Transferência
+                        Transferência Bancária / IBAN
                       </h4>
-                      <span className="text-[9px] font-mono text-neutral-400">PROCESSAMENTO EM 24H</span>
+                      <span className="text-[9px] font-mono text-neutral-400">PROCESSAMENTO MANUAL</span>
                     </div>
                     <p className="text-[11px] text-neutral-500 font-sans leading-relaxed">
-                      Efetue transferência bancária para o IBAN abaixo e envie o comprovativo para <strong>vendas@nuva.com</strong> identificando o código de encomenda. A sua reserva estará ativa por 48 horas.
+                      Efetue transferência bancária para o IBAN abaixo e envie o comprovativo para <strong>nuva2026@proton.me</strong>.
                     </p>
-                    <div className="bg-white p-3 border border-neutral-200 space-y-1 text-xs font-mono selection:bg-neutral-100">
-                      <div className="flex justify-between">
+                    <div className="bg-white p-3 border border-neutral-200 space-y-1 text-[11px] font-mono selection:bg-neutral-100">
+                      <div className="flex justify-between flex-wrap gap-2">
                         <span className="text-neutral-400">BANCO:</span>
-                        <span className="font-semibold text-black">BAI (BANCO ANGOLANO DE INVESTIMENTO)</span>
+                        <span className="font-semibold text-black text-right">BANCO MILLENNIUM ATLANTICO</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between flex-wrap gap-2">
                         <span className="text-neutral-400">IBAN:</span>
-                        <span className="font-semibold text-black tracking-wider text-[11px]">AO06 0040 0000 7824 1029 1014 9</span>
+                        <span className="font-semibold text-black text-right tracking-[0.1em]">AO06 0055 0000 5957 4524 1017 7</span>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between flex-wrap gap-2">
                         <span className="text-neutral-400">BENEFICIÁRIO:</span>
-                        <span className="font-semibold text-black">NUVA LABS ANGOLA</span>
+                        <span className="font-semibold text-black text-right">AUGUSTO SOBRINHO DA SILVA COSTA</span>
                       </div>
                     </div>
+                  </div>
+                )}
+
+                {paymentMethod === "delivery" && (
+                  <div className="w-full space-y-3">
+                    <div className="flex items-center justify-between">
+                      <h4 className="font-mono text-[10px] uppercase font-semibold text-neutral-900">
+                        Pagamento na Entrega
+                      </h4>
+                      <span className="text-[9px] font-mono text-neutral-400">CONFIRMAR E AGUARDAR</span>
+                    </div>
+                    <p className="text-[11px] text-neutral-500 font-sans leading-relaxed">
+                      Efetue o pagamento apenas quando receber a encomenda na morada indicada. Aceitaremos pagamento em TPA ou através de transferência no momento da entrega do motorista.
+                    </p>
                   </div>
                 )}
               </div>
@@ -423,7 +395,7 @@ export function CheckoutSection({
                   </>
                 ) : (
                   <>
-                    <span>Confirmar & Pagar {formatPrice(total)}</span>
+                    <span>{(paymentMethod === "transfer" || paymentMethod === "delivery") ? "ENVIAR PEDIDO" : `Confirmar & Pagar ${formatPrice(total)}`}</span>
                   </>
                 )}
               </button>

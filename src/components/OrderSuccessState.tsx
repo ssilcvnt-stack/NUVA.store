@@ -21,6 +21,29 @@ export function OrderSuccessState({
   onTrackOrder
 }: OrderSuccessProps) {
   
+  const isVanqir = order.customerInfo.paymentMethod === "vanqir_mcx" || order.customerInfo.paymentMethod === "vanqir_ref";
+  const iframeLinks: Record<string, string> = {
+    navy: "https://pay.vanqir.com/checkout/6972a1fd-12bb-4ebf-b7ab-751bc367a666",
+    white: "https://pay.vanqir.com/checkout/3c3a5dcd-3ada-4377-9e40-d96fefe04547",
+    lightblue: "https://pay.vanqir.com/checkout/84d1ba1e-4b07-4bc4-9adb-69a88325adf2"
+  };
+  
+  let mcxLink = "";
+  if (isVanqir) {
+    const firstCartItem = order.items[0];
+    const colorId = firstCartItem?.selectedColor.id || "navy";
+    const baseLink = iframeLinks[colorId] || iframeLinks.navy;
+    try {
+      const checkoutUrl = new URL(baseLink);
+      checkoutUrl.searchParams.set('email', order.customerInfo.email);
+      checkoutUrl.searchParams.set('name', `${order.customerInfo.firstName} ${order.customerInfo.lastName}`.trim());
+      checkoutUrl.searchParams.set('phone', order.customerInfo.phone);
+      mcxLink = checkoutUrl.toString();
+    } catch (e) {
+      mcxLink = baseLink;
+    }
+  }
+
   const downloadReceipt = () => {
     const doc = new jsPDF();
     
@@ -60,7 +83,12 @@ export function OrderSuccessState({
     currentY += 7;
     addRow("DATA:", order.createdAt, currentY);
     currentY += 7;
-    addRow("PAGAMENTO:", order.customerInfo.paymentMethod === "mbway" ? "MULTICAIXA EXPRESS" : "CARTÃO / CHECKOUT DIRETO", currentY);
+    let paymentMethodLabel = "TRANSFERÊNCIA BANCÁRIA";
+    if (order.customerInfo.paymentMethod === "vanqir_mcx") paymentMethodLabel = "MCX EXPRESS";
+    if (order.customerInfo.paymentMethod === "vanqir_ref") paymentMethodLabel = "REFERÊNCIA";
+    if (order.customerInfo.paymentMethod === "delivery") paymentMethodLabel = "PAGAMENTO NA ENTREGA";
+
+    addRow("PAGAMENTO:", paymentMethodLabel, currentY);
     currentY += 7;
     addRow("LOGÍSTICA:", order.trackingNumber, currentY);
     currentY += 15;
@@ -171,6 +199,22 @@ export function OrderSuccessState({
           </p>
         </div>
       </div>
+
+      {isVanqir && (
+        <div className="w-full bg-white border border-neutral-200 overflow-hidden shadow-sm animate-scale-up">
+          <div className="bg-neutral-50 px-4 py-3 border-b border-neutral-200 flex items-center justify-between">
+             <h3 className="font-mono text-[10px] uppercase font-semibold tracking-wider text-neutral-900">
+               Pagamento Seguro - {order.customerInfo.paymentMethod === 'vanqir_mcx' ? 'MCX Express' : 'Referência'}
+             </h3>
+             <span className="text-[9px] font-mono text-neutral-400">VIA VANQIR PAY</span>
+          </div>
+          <iframe 
+            src={mcxLink} 
+            className="w-full h-[650px] border-none bg-white" 
+            title="Vanqir Checkout"
+          />
+        </div>
+      )}
 
       {/* Primary specs box */}
       <div className="bg-white border border-neutral-200 p-6 md:p-8 text-left space-y-6">

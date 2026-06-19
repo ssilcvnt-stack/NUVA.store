@@ -48,7 +48,7 @@ export interface CustomerInfo {
   city: string;
   postalCode: string;
   country: string;
-  paymentMethod: "mbway" | "card" | "transfer";
+  paymentMethod: "vanqir_mcx" | "vanqir_ref" | "transfer" | "delivery";
   mbwayPhone?: string;
   cardNumber?: string;
   cardExpiry?: string;

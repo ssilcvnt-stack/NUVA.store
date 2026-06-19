@@ -257,69 +257,6 @@ export default function App() {
               </div>
             </section>
 
-            {/* About NUVA Text Block */}
-            <section className="max-w-3xl mx-auto px-4 sm:px-6 mt-16 md:mt-24 text-center space-y-6 text-[13px] md:text-sm font-sans font-light text-neutral-800 leading-relaxed">
-              <h2 className="text-xl md:text-2xl font-light text-neutral-900 mb-8 uppercase tracking-widest">Sobre a NUVA</h2>
-              
-              <p>Vivemos num mundo cheio de excessos.</p>
-              
-              <p>Mais tendências. Mais opções. Mais ruído.</p>
-              
-              <p>A NUVA nasceu para seguir um caminho diferente.</p>
-              
-              <p>
-                Acreditamos que as melhores peças são aquelas que permanecem. As que vestimos sem pensar duas vezes. 
-                As que nos acompanham nas rotinas mais simples e nos momentos mais importantes. As que fazem parte de quem somos.
-              </p>
-              
-              <p>Por isso, escolhemos começar pelo essencial.</p>
-              
-              <p>
-                Criamos t-shirts básicas com uma abordagem premium: tecidos cuidadosamente selecionados, caimentos equilibrados, 
-                acabamentos limpos e uma estética intemporal. Sem logótipos exagerados. Sem excessos. 
-                Apenas peças bem feitas, desenhadas para durar e para serem usadas repetidamente.
-              </p>
-              
-              <p>
-                A nossa inspiração vem do luxo silencioso — aquele que não precisa de chamar atenção para ser reconhecido. 
-                Valorizamos a qualidade acima da quantidade, a intenção acima da tendência e a confiança que nasce da simplicidade.
-              </p>
-              
-              <p>A NUVA não acredita em coleções infinitas.</p>
-              
-              <p>Acredita em fazer menos, mas fazer melhor.</p>
-              
-              <p>
-                Cada produto que lançamos é tratado como uma obsessão. Refinado até encontrar o equilíbrio entre conforto, 
-                versatilidade e sofisticação discreta. Porque vestir-se bem não deve ser complicado. Deve ser natural.
-              </p>
-              
-              <p>
-                Estamos a construir uma marca para quem procura autenticidade. Para quem prefere investir em poucas 
-                peças excecionais em vez de muitas descartáveis. Para quem entende que o verdadeiro luxo está nos 
-                detalhes que se sentem, não nos que se exibem.
-              </p>
-              
-              <p>A NUVA é mais do que roupa.</p>
-              
-              <p>É uma filosofia de viver com intenção.</p>
-              
-              <p>É escolher o essencial.</p>
-              
-              <p>É desacelerar.</p>
-              
-              <p>É valorizar o que realmente importa.</p>
-              
-              <p>Porque o verdadeiro luxo nunca foi sobre ter mais.</p>
-              
-              <p>Foi sempre sobre escolher melhor.</p>
-              
-              <div className="pt-12 pb-4 flex flex-col items-center justify-center space-y-4">
-                <Logo className="h-4" />
-                <span className="text-[10px] uppercase font-mono tracking-widest font-semibold text-neutral-400">Less. Better.</span>
-              </div>
-            </section>
-
             {/* Vitrine / Showcase Grid */}
             <section className="max-w-[90rem] mx-auto px-4 sm:px-6 mt-16 md:mt-24 select-none">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6 lg:gap-10">
@@ -596,6 +533,69 @@ export default function App() {
               />
             </section>
 
+            {/* About NUVA Text Block */}
+            <section className="max-w-3xl mx-auto px-4 sm:px-6 mt-16 md:mt-24 text-center space-y-6 text-[13px] md:text-sm font-sans font-light text-neutral-800 leading-relaxed">
+              <h2 className="text-xl md:text-2xl font-light text-neutral-900 mb-8 uppercase tracking-widest">Sobre a NUVA</h2>
+              
+              <p>Vivemos num mundo cheio de excessos.</p>
+              
+              <p>Mais tendências. Mais opções. Mais ruído.</p>
+              
+              <p>A NUVA nasceu para seguir um caminho diferente.</p>
+              
+              <p>
+                Acreditamos que as melhores peças são aquelas que permanecem. As que vestimos sem pensar duas vezes. 
+                As que nos acompanham nas rotinas mais simples e nos momentos mais importantes. As que fazem parte de quem somos.
+              </p>
+              
+              <p>Por isso, escolhemos começar pelo essencial.</p>
+              
+              <p>
+                Criamos t-shirts básicas com uma abordagem premium: tecidos cuidadosamente selecionados, caimentos equilibrados, 
+                acabamentos limpos e uma estética intemporal. Sem logótipos exagerados. Sem excessos. 
+                Apenas peças bem feitas, desenhadas para durar e para serem usadas repetidamente.
+              </p>
+              
+              <p>
+                A nossa inspiração vem do luxo silencioso — aquele que não precisa de chamar atenção para ser reconhecido. 
+                Valorizamos a qualidade acima da quantidade, a intenção acima da tendência e a confiança que nasce da simplicidade.
+              </p>
+              
+              <p>A NUVA não acredita em coleções infinitas.</p>
+              
+              <p>Acredita em fazer menos, mas fazer melhor.</p>
+              
+              <p>
+                Cada produto que lançamos é tratado como uma obsessão. Refinado até encontrar o equilíbrio entre conforto, 
+                versatilidade e sofisticação discreta. Porque vestir-se bem não deve ser complicado. Deve ser natural.
+              </p>
+              
+              <p>
+                Estamos a construir uma marca para quem procura autenticidade. Para quem prefere investir em poucas 
+                peças excecionais em vez de muitas descartáveis. Para quem entende que o verdadeiro luxo está nos 
+                detalhes que se sentem, não nos que se exibem.
+              </p>
+              
+              <p>A NUVA é mais do que roupa.</p>
+              
+              <p>É uma filosofia de viver com intenção.</p>
+              
+              <p>É escolher o essencial.</p>
+              
+              <p>É desacelerar.</p>
+              
+              <p>É valorizar o que realmente importa.</p>
+              
+              <p>Porque o verdadeiro luxo nunca foi sobre ter mais.</p>
+              
+              <p>Foi sempre sobre escolher melhor.</p>
+              
+              <div className="pt-12 pb-4 flex flex-col items-center justify-center space-y-4">
+                <Logo className="h-4" />
+                <span className="text-[10px] uppercase font-mono tracking-widest font-semibold text-neutral-400">Less. Better.</span>
+              </div>
+            </section>
+
             {/* brand guidelines values Grid Bento */}
             <section className="max-w-6xl mx-auto px-4 sm:px-6 mt-16 md:mt-24 scroll-mt-24" ref={infoRef} id="story-section">
               <div className="space-y-1 mb-8">
@@ -622,11 +622,6 @@ export default function App() {
                   </div>
                 ))}
               </div>
-            </section>
-
-            {/* Newsletter Subscription block */}
-            <section className="max-w-6xl mx-auto px-4 sm:px-6 mt-16 md:mt-24 scroll-mt-24" id="newsletter-section">
-              <NewsletterSection />
             </section>
 
             {/* Help desk & Sizing info FAQ Accordion */}
@@ -670,6 +665,11 @@ export default function App() {
                 </div>
 
               </div>
+            </section>
+
+            {/* Newsletter Subscription block */}
+            <section className="max-w-6xl mx-auto px-4 sm:px-6 mt-16 md:mt-24 mb-24 scroll-mt-24" id="newsletter-section">
+              <NewsletterSection />
             </section>
 
           </div>
