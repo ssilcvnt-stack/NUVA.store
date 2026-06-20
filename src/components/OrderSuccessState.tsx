@@ -200,22 +200,6 @@ export function OrderSuccessState({
         </div>
       </div>
 
-      {isVanqir && (
-        <div className="w-full bg-white border border-neutral-200 overflow-hidden shadow-sm animate-scale-up">
-          <div className="bg-neutral-50 px-4 py-3 border-b border-neutral-200 flex items-center justify-between">
-             <h3 className="font-mono text-[10px] uppercase font-semibold tracking-wider text-neutral-900">
-               Pagamento Seguro - {order.customerInfo.paymentMethod === 'vanqir_mcx' ? 'MCX Express' : 'Referência'}
-             </h3>
-             <span className="text-[9px] font-mono text-neutral-400">VIA VANQIR PAY</span>
-          </div>
-          <iframe 
-            src={mcxLink} 
-            className="w-full h-[650px] border-none bg-white" 
-            title="Vanqir Checkout"
-          />
-        </div>
-      )}
-
       {/* Primary specs box */}
       <div className="bg-white border border-neutral-200 p-6 md:p-8 text-left space-y-6">
         <div className="flex justify-between items-baseline border-b border-neutral-200 pb-3">

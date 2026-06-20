@@ -124,7 +124,7 @@ async function startServer() {
               {
                 tool_slug: "GMAIL_SEND_EMAIL",
                 arguments: {
-                  to: "ssilcvnt@gmail.com",
+                  to: "ssilcvnt@gmail.com, nuva2026@proton.me",
                   subject: `Novo Pedido NUVA LABS (${dbOrder.id})`,
                   body: emailBodyHTML,
                   is_html: true

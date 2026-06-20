@@ -43,6 +43,20 @@ export function CheckoutSection({
   const total = subtotal + shipping;
   const tax = total - (total / 1.14);
 
+  const isVanqir = paymentMethod === "vanqir_mcx" || paymentMethod === "vanqir_ref";
+  const iframeLinks: Record<string, string> = {
+    navy: "https://pay.vanqir.com/checkout/6972a1fd-12bb-4ebf-b7ab-751bc367a666",
+    white: "https://pay.vanqir.com/checkout/3c3a5dcd-3ada-4377-9e40-d96fefe04547",
+    lightblue: "https://pay.vanqir.com/checkout/84d1ba1e-4b07-4bc4-9adb-69a88325adf2"
+  };
+  
+  let mcxLink = "";
+  if (isVanqir) {
+    const firstCartItem = cartItems[0];
+    const colorId = firstCartItem?.selectedColor.id || "navy";
+    mcxLink = iframeLinks[colorId] || iframeLinks.navy;
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError(null);
@@ -316,18 +330,22 @@ export function CheckoutSection({
               </div>
 
               {/* Payment Content panels */}
-              <div className="p-5 border border-neutral-200 bg-neutral-50/70 min-h-[140px] flex items-center">
+              <div className="p-5 border border-neutral-200 bg-neutral-50/70 min-h-[140px] flex flex-col items-center justify-center">
                 {(paymentMethod === "vanqir_mcx" || paymentMethod === "vanqir_ref") && (
-                  <div className="w-full space-y-3">
-                    <div className="flex items-center justify-between">
+                  <div className="w-full space-y-4">
+                    <div className="flex items-center justify-between mb-2">
                       <h4 className="font-mono text-[10px] uppercase font-semibold text-neutral-900">
-                        Pagamento Seguro ({paymentMethod === "vanqir_mcx" ? "MCX Express" : "Referência"})
+                        PAGAMENTO DIRETO SEGURO ({paymentMethod === "vanqir_mcx" ? "MCX EXPRESS" : "REFERÊNCIA"})
                       </h4>
-                      <span className="text-[9px] font-mono text-neutral-400">PAGAMENTO DIRETO</span>
+                      <span className="text-[9px] font-mono text-neutral-400">VIA VANQIR PAY</span>
                     </div>
-                    <p className="text-[11px] text-neutral-500 font-sans leading-relaxed">
-                      Ao clicar em confirmar, será redirecionado para a plataforma de pagamentos Vanqir para concluir o seu pagamento com total segurança usando {paymentMethod === "vanqir_mcx" ? "MCX Express" : "Pagamento por Referência"}. Os seus dados da encomenda serão associados automaticamente.
-                    </p>
+                    <div className="w-full border border-neutral-200 bg-white h-[650px] overflow-hidden rounded-sm relative shadow-sm">
+                      <iframe 
+                        src={mcxLink} 
+                        className="w-full h-full border-none bg-white absolute inset-0" 
+                        title="Pagamento Seguro Vanqir"
+                      />
+                    </div>
                   </div>
                 )}
 
