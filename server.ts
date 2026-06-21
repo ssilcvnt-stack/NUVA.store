@@ -30,7 +30,7 @@ async function startServer() {
       };
 
       const emailBodyHTML = `
-      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-w-width: 600px; margin: 0 auto; color: #000; padding: 20px;">
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #000; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
           <h1 style="margin: 0; font-size: 24px; letter-spacing: 2px;">NUVA</h1>
           <p style="margin: 5px 0 0; color: #666; font-size: 12px; letter-spacing: 1px;">Less. Better.</p>

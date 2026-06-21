@@ -53,7 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const emailBodyHTML = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f7f7f7; color: #1a1a1a; padding: 40px 20px; line-height: 1.6;">
-        <div style="max-w-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
           <!-- Cabeçalho -->
           <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px;">
             <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">NUVA L A B S</h1>
