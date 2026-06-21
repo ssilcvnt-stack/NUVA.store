@@ -98,6 +98,62 @@ export default function App() {
     ref.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Sync URL hash with the view state (Client-side Routing)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash === "#/checkout") {
+        setView("checkout");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else if (hash === "#/rastrear" || hash === "#/rastrear-pedido") {
+        setView("tracking");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else if (hash === "#/sucesso" || hash === "#/success") {
+        setView("success");
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      } else if (hash === "#/camiseta") {
+        setView("home");
+        setTimeout(() => {
+          scrollTo(catalogRef);
+        }, 150);
+      } else if (hash === "#/filosofia") {
+        setView("home");
+        setTimeout(() => {
+          scrollTo(infoRef);
+        }, 150);
+      } else if (hash === "#/" || hash === "" || hash === "#") {
+        setView("home");
+      }
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    // Initial sync
+    handleHashChange();
+
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
+  // Update URL hash when state view changes
+  useEffect(() => {
+    const currentHash = window.location.hash;
+    if (view === "checkout" && currentHash !== "#/checkout") {
+      window.location.hash = "/checkout";
+    } else if (view === "tracking" && currentHash !== "#/rastrear" && currentHash !== "#/rastrear-pedido") {
+      window.location.hash = "/rastrear";
+    } else if (view === "success" && currentHash !== "#/sucesso" && currentHash !== "#/success") {
+      window.location.hash = "/sucesso";
+    } else if (view === "home") {
+      if (
+        currentHash !== "#/camiseta" && 
+        currentHash !== "#/filosofia" && 
+        currentHash !== "#/" && 
+        currentHash !== ""
+      ) {
+        window.location.hash = "/";
+      }
+    }
+  }, [view]);
+
   // Cart Handlers
   const handleAddToCart = (product: Product, color: ProductColor, size: string, quantity: number = 1) => {
     const itemId = `${product.id}-${color.id}-${size}`;
@@ -158,14 +214,14 @@ export default function App() {
         className={`fixed top-0 left-0 right-0 z-30 transition-all duration-500 ease-in-out ${
           view === "home" && !isScrolled
             ? "bg-transparent border-transparent py-4 text-white"
-            : "bg-white/95 backdrop-blur-md border-b border-neutral-100 shadow-md py-2 text-black"
+            : "bg-white border-b border-neutral-100 shadow-md py-2 text-black"
         }`} 
         id="main-header"
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-18 sm:h-20 flex md:grid md:grid-cols-3 items-center justify-between">
           
           {/* Logo Signature - Left Corner */}
-          <div className="cursor-pointer flex justify-start" onClick={() => setView("home")} id="brand-logo-container">
+          <div className="cursor-pointer flex justify-start" onClick={() => { window.location.hash = "/"; }} id="brand-logo-container">
             <Logo className={`h-7 sm:h-8 transition-all duration-500 ${view === "home" && !isScrolled ? "invert brightness-200" : "text-black"}`} />
           </div>
 
@@ -175,21 +231,21 @@ export default function App() {
           }`}>
             <button 
               type="button" 
-              onClick={() => { setView("home"); setTimeout(() => scrollTo(catalogRef), 100); }} 
+              onClick={() => { window.location.hash = "/camiseta"; }} 
               className="hover:opacity-70 transition-all font-semibold cursor-pointer"
             >
               a camiseta
             </button>
             <button 
               type="button" 
-              onClick={() => { setView("home"); setTimeout(() => scrollTo(infoRef), 100); }} 
+              onClick={() => { window.location.hash = "/filosofia"; }} 
               className="hover:opacity-70 transition-all font-semibold cursor-pointer"
             >
               filosofia
             </button>
             <button 
               type="button" 
-              onClick={() => { setView("tracking"); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+              onClick={() => { window.location.hash = "/rastrear"; }} 
               className="hover:opacity-70 transition-all font-semibold cursor-pointer"
             >
               rastrear pedido

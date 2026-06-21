@@ -51,52 +51,103 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({ success: true, warning: 'Email not sent due to missing credentials' });
     }
 
+    const formatPriceServer = (price: number) => {
+      return new Intl.NumberFormat("pt-AO", {
+        style: "currency",
+        currency: "AOA",
+      }).format(price);
+    };
+
+    let paymentMethodText = "TRANSFERÊNCIA BANCÁRIA";
+    if (dbOrder.customerInfo.paymentMethod === 'vanqir_mcx' || dbOrder.customerInfo.paymentMethod === 'mbway') {
+      paymentMethodText = 'MCX EXPRESS';
+    } else if (dbOrder.customerInfo.paymentMethod === 'vanqir_ref') {
+      paymentMethodText = 'REFERÊNCIA';
+    } else if (dbOrder.customerInfo.paymentMethod === 'delivery') {
+      paymentMethodText = 'PAGAMENTO NA ENTREGA';
+    }
+
     const emailBodyHTML = `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f7f7f7; color: #1a1a1a; padding: 40px 20px; line-height: 1.6;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; padding: 40px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
-          <!-- Cabeçalho -->
-          <div style="text-align: center; margin-bottom: 40px; border-bottom: 2px solid #000; padding-bottom: 20px;">
-            <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;">NUVA L A B S</h1>
-            <p style="margin: 5px 0 0; color: #666; font-size: 12px; letter-spacing: 1px;">A CAMISETA ESSENCIAL</p>
-          </div>
-          
-          <h2 style="font-size: 18px; font-weight: 600; text-transform: uppercase; margin-bottom: 24px;">NOVA ENCOMENDA #${dbOrder.id}</h2>
+      <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #000; padding: 20px;">
+        <div style="text-align: center; margin-bottom: 30px;">
+          <h1 style="margin: 0; font-size: 24px; letter-spacing: 2px;">NUVA</h1>
+          <p style="margin: 5px 0 0; color: #666; font-size: 12px; letter-spacing: 1px;">Less. Better.</p>
+        </div>
+        
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+        
+        <table style="width: 100%; font-size: 12px; text-transform: uppercase;">
+          <tr>
+            <td style="font-weight: bold;">RECIBO:</td>
+            <td style="text-align: right;">${dbOrder.id}</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold; padding-top: 8px;">DATA:</td>
+            <td style="text-align: right; padding-top: 8px;">${dbOrder.createdAt || new Date().toLocaleString('pt-PT')}</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold; padding-top: 8px;">PAGAMENTO:</td>
+            <td style="text-align: right; padding-top: 8px;">${paymentMethodText}</td>
+          </tr>
+          <tr>
+            <td style="font-weight: bold; padding-top: 8px;">LOGÍSTICA:</td>
+            <td style="text-align: right; padding-top: 8px;">${dbOrder.trackingNumber}</td>
+          </tr>
+        </table>
 
-          <div style="background-color: #f9f9f9; padding: 20px; border-left: 4px solid #000; margin-bottom: 30px;">
-            <p style="margin: 0 0 10px; font-size: 14px;"><strong style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Cliente:</strong><br/>${dbOrder.customerInfo.firstName} ${dbOrder.customerInfo.lastName}</p>
-            <p style="margin: 0 0 10px; font-size: 14px;"><strong style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Contacto:</strong><br/>${dbOrder.customerInfo.email} | ${dbOrder.customerInfo.phone}</p>
-            <p style="margin: 0 0 10px; font-size: 14px;"><strong style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Método Faturação:</strong><br/>${dbOrder.customerInfo.paymentMethod}</p>
-            <p style="margin: 0; font-size: 14px;"><strong style="font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px;">Endereço Entrega:</strong><br/>
-              ${dbOrder.customerInfo.address}<br/>
-              ${dbOrder.customerInfo.city}, ${dbOrder.customerInfo.postalCode ? dbOrder.customerInfo.postalCode + ', ' : ''}${dbOrder.customerInfo.country}
-            </p>
-          </div>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
 
-          <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 14px;">
-            <tr style="border-bottom: 1px solid #eee;">
-              <th style="text-align: left; padding: 10px 0; color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">ARTIGO</th>
-              <th style="text-align: right; padding: 10px 0; color: #666; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">QTD</th>
-            </tr>
+        <div style="font-size: 12px;">
+          <p style="font-weight: bold; margin-bottom: 10px;">INFORMAÇÕES DO CLIENTE</p>
+          <p style="margin: 5px 0;">Nome: ${dbOrder.customerInfo.firstName} ${dbOrder.customerInfo.lastName}</p>
+          <p style="margin: 5px 0;">Email: ${dbOrder.customerInfo.email}</p>
+          <p style="margin: 5px 0;">Telefone: ${dbOrder.customerInfo.phone}</p>
+          <p style="margin: 5px 0;">Morada: ${dbOrder.customerInfo.address}, ${dbOrder.customerInfo.city}, ${dbOrder.customerInfo.country}</p>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
+
+        <div style="font-size: 12px;">
+          <p style="font-weight: bold; margin-bottom: 10px;">ARTIGOS ADQUIRIDOS</p>
+          <table style="width: 100%; border-collapse: collapse;">
             ${dbOrder.items.map((item: any) => `
-              <tr style="border-bottom: 1px solid #f5f5f5;">
-                <td style="padding: 15px 0;">
-                  <strong>${item.product?.name || 'T-shirt Essential'}</strong><br/>
-                  <span style="color: #666; font-size: 12px;">Cor: ${item.selectedColor.name} | Tamanho: ${item.selectedSize}</span>
+              <tr>
+                <td style="padding: 8px 0; border-bottom: 1px dotted #ccc;">
+                  ${item.quantity}x ${item.product?.name || 'T-shirt Essential'}<br/>
+                  <span style="color: #666; font-size: 10px;">(Cor: ${item.selectedColor.name} | Tam: ${item.selectedSize})</span>
                 </td>
-                <td style="padding: 15px 0; text-align: right; font-weight: 600;">${item.quantity}</td>
+                <td style="text-align: right; padding: 8px 0; border-bottom: 1px dotted #ccc;">
+                  ${formatPriceServer((item.selectedColor.priceOverride || item.product.price) * item.quantity)}
+                </td>
               </tr>
             `).join('')}
           </table>
+        </div>
 
-          <div style="background-color: #000; color: #fff; padding: 15px 20px; text-align: right; margin-bottom: 30px;">
-            <p style="margin: 0; font-size: 12px; letter-spacing: 1px; opacity: 0.8;">VALOR A FATURAR</p>
-            <p style="margin: 5px 0 0; font-size: 20px; font-weight: 600; letter-spacing: 0.5px;">${new Intl.NumberFormat('pt-AO', { style: 'currency', currency: 'AOA' }).format(dbOrder.total)}</p>
-          </div>
+        <div style="font-size: 12px; margin-top: 15px;">
+          <table style="width: 100%;">
+            <tr>
+              <td>Subtotal:</td>
+              <td style="text-align: right;">${formatPriceServer(dbOrder.subtotal)}</td>
+            </tr>
+            <tr>
+              <td style="padding-top: 5px;">Portes de Envio:</td>
+              <td style="text-align: right; padding-top: 5px;">${dbOrder.shipping === 0 ? "GRÁTIS" : formatPriceServer(dbOrder.shipping)}</td>
+            </tr>
+            <tr>
+              <td style="padding-top: 5px;">Impostos Locais:</td>
+              <td style="text-align: right; padding-top: 5px;">${formatPriceServer(dbOrder.tax)}</td>
+            </tr>
+            <tr>
+              <td style="font-weight: bold; margin-top: 10px; padding-top: 15px; font-size: 14px;">TOTAL INVESTIDO:</td>
+              <td style="text-align: right; font-weight: bold; padding-top: 15px; font-size: 14px;">${formatPriceServer(dbOrder.total)}</td>
+            </tr>
+          </table>
+        </div>
 
-          <div style="margin-top: 40px; text-align: center; color: #666; font-size: 10px; line-height: 1.5;">
-            <p style="font-style: italic;">O essencial nunca sai de moda. Obrigado por apoiar a produção consciente.</p>
-            <p>Apoio ao Cliente: nuva2026@proton.me | +244 941429171<br/>IG: @brancodiamante.joalheria | FB: /nuva.sho</p>
-          </div>
+        <div style="margin-top: 40px; text-align: center; color: #666; font-size: 10px; line-height: 1.5;">
+          <p style="font-style: italic;">O essencial nunca sai de moda. Obrigado por apoiar a produção consciente.</p>
+          <p>Apoio ao Cliente: nuva2026@proton.me | +244 941429171<br/>IG: @brancodiamante.joalheria | FB: /nuva.sho</p>
         </div>
       </div>
     `;

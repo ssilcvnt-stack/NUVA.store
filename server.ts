@@ -29,6 +29,15 @@ async function startServer() {
         }).format(price);
       };
 
+      let paymentMethodText = "TRANSFERÊNCIA BANCÁRIA";
+      if (dbOrder.customerInfo.paymentMethod === 'vanqir_mcx' || dbOrder.customerInfo.paymentMethod === 'mbway') {
+        paymentMethodText = 'MCX EXPRESS';
+      } else if (dbOrder.customerInfo.paymentMethod === 'vanqir_ref') {
+        paymentMethodText = 'REFERÊNCIA';
+      } else if (dbOrder.customerInfo.paymentMethod === 'delivery') {
+        paymentMethodText = 'PAGAMENTO NA ENTREGA';
+      }
+
       const emailBodyHTML = `
       <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #000; padding: 20px;">
         <div style="text-align: center; margin-bottom: 30px;">
@@ -49,7 +58,7 @@ async function startServer() {
           </tr>
           <tr>
             <td style="font-weight: bold; padding-top: 8px;">PAGAMENTO:</td>
-            <td style="text-align: right; padding-top: 8px;">${dbOrder.customerInfo.paymentMethod === 'mbway' ? 'MCX EXPRESS' : 'TRANSFERÊNCIA BANCÁRIA'}</td>
+            <td style="text-align: right; padding-top: 8px;">${paymentMethodText}</td>
           </tr>
           <tr>
             <td style="font-weight: bold; padding-top: 8px;">LOGÍSTICA:</td>
