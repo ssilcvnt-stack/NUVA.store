@@ -34,6 +34,14 @@ import { NewsletterSection } from "./components/NewsletterSection";
 
 import { PRODUCTS, BRAND_VALUES, IMAGES, SIZE_TABLE, formatPrice } from "./data";
 import { Product, CartItem, ProductColor, Order } from "./types";
+import { 
+  initMetaPixel, 
+  trackPageView, 
+  trackAddToCart, 
+  trackViewContent,
+  trackInitiateCheckout,
+  trackPurchase
+} from "./lib/metaPixel";
 
 export default function App() {
   // Navigation & Cart States
@@ -53,13 +61,31 @@ export default function App() {
   const [homeSizeError, setHomeSizeError] = useState(false);
   const [homeQty, setHomeQty] = useState<number>(1);
 
-  useEffect(() => {
-    setHomeActiveImageIndex(0);
-  }, [homeColor]);
-  
   // Selected Product detail drawer state
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+
+  // Initialize Meta Pixel on mount
+  useEffect(() => {
+    initMetaPixel();
+  }, []);
+
+  // Track ViewContent on view change or detail drawer opening
+  useEffect(() => {
+    if (view === "home") {
+      trackViewContent(singleProduct.name, singleProduct.id, 15990, "AOA");
+    }
+  }, [view]);
+
+  useEffect(() => {
+    if (isDetailOpen && selectedProduct) {
+      trackViewContent(selectedProduct.name, selectedProduct.id, 15990, "AOA");
+    }
+  }, [isDetailOpen, selectedProduct]);
+
+  useEffect(() => {
+    setHomeActiveImageIndex(0);
+  }, [homeColor]);
 
   // Successfully placed order reference
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
@@ -124,6 +150,7 @@ export default function App() {
       } else if (hash === "#/" || hash === "" || hash === "#") {
         setView("home");
       }
+      trackPageView();
     };
 
     window.addEventListener("hashchange", handleHashChange);
@@ -166,6 +193,7 @@ export default function App() {
       }
       return [...prev, { id: itemId, product, selectedColor: color, selectedSize: size, quantity }];
     });
+    trackAddToCart(product.name, product.id, 15990 * quantity, "AOA");
   };
 
   const handleUpdateQuantity = (itemId: string, delta: number) => {
@@ -201,6 +229,8 @@ export default function App() {
 
   const handleOrderComplete = (order: Order) => {
     setCompletedOrder(order);
+    // Track purchase with Meta Pixel before clearing the cart
+    trackPurchase(order.total, "AOA", order.id, order.items.length);
     setCartItems([]); // flush cart
     setView("success");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -845,6 +875,9 @@ export default function App() {
         onRemoveItem={handleRemoveItem}
         onCheckout={() => {
           setIsCartOpen(false);
+          const totalValue = cartItems.reduce((sum, item) => sum + (item.selectedColor.priceOverride || item.product.price) * item.quantity, 0);
+          const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+          trackInitiateCheckout(totalValue, totalItems, "AOA");
           setView("checkout");
           window.scrollTo({ top: 0, behavior: "smooth" });
         }}
