@@ -6,7 +6,7 @@ declare global {
 }
 
 // Default Meta Pixel ID for NUVA. Can be overridden in .env via VITE_META_PIXEL_ID
-export const META_PIXEL_ID = (import.meta as any).env?.VITE_META_PIXEL_ID || "1438914616843719"; // Default template ID, can be replaced by user
+export const META_PIXEL_ID = (import.meta as any).env?.VITE_META_PIXEL_ID || "1001496935926927"; // Default NUVA Meta Pixel ID
 
 /**
  * Initializes the Meta Pixel script dynamically in the document head.
