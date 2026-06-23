@@ -15,7 +15,7 @@ async function startServer() {
     try {
       const { eventName, eventId, eventSourceUrl, customData, userData } = req.body;
       const pixelId = process.env.VITE_META_PIXEL_ID || "1001496935926927";
-      const accessToken = process.env.META_ACCESS_TOKEN || "EAAOrfy0fArsBR7vQ3RomnscJkrNOIiIhCMPIlDPZAvYm9rmnr2iz40Jw116ijmbGfpayoRikOZAZCqlT87oLl9JSD2ZA2nBlai4oZBZAEY24lkw5bZC8qYsmpfEXomZCvxMOTi5zR3GdzVm8oLFbxaRU9AEPH3x09PdNpGyoGY4uzoW8YCjNOQUF7s9Ttzwsr0TF9wZDZD";
+      const accessToken = process.env.META_ACCESS_TOKEN || "EAAOrfy0fArsBR4DuZAaOQDSj7UwzQ0Bwlpvg9bXoO4fvZAzx5Qm3bxbVvKZA1XJZCbSrSLKhZCQZAPvzx2sglrqgkDvmhThJGgJkokEFIPPqzu2nUZBaFpiMPL4toSiD8i0KlIT4dSMwCfgx1RbyQEOtZCr0nn6vSdjvn36h4K5r7drTKn7KHvCFsPVZB6GsitZCHHfgZDZD";
 
       if (!pixelId || !accessToken) {
         return res.status(400).json({ success: false, error: "Meta Pixel credentials missing on backend." });
