@@ -230,7 +230,7 @@ export default function App() {
   const handleOrderComplete = (order: Order) => {
     setCompletedOrder(order);
     // Track purchase with Meta Pixel before clearing the cart
-    trackPurchase(order.total, "AOA", order.id, order.items.length);
+    trackPurchase(order.total, "AOA", order.id, order.items.length, order.customerInfo);
     setCartItems([]); // flush cart
     setView("success");
     window.scrollTo({ top: 0, behavior: "smooth" });

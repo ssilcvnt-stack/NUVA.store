@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
+import crypto from "crypto";
 
 async function startServer() {
   const app = express();
@@ -10,6 +11,110 @@ async function startServer() {
   app.use(express.json());
 
   // API Routes
+  app.post("/api/meta-event", async (req, res) => {
+    try {
+      const { eventName, eventId, eventSourceUrl, customData, userData } = req.body;
+      const pixelId = process.env.VITE_META_PIXEL_ID || "1001496935926927";
+      const accessToken = process.env.META_ACCESS_TOKEN || "EAAOrfy0fArsBR7vQ3RomnscJkrNOIiIhCMPIlDPZAvYm9rmnr2iz40Jw116ijmbGfpayoRikOZAZCqlT87oLl9JSD2ZA2nBlai4oZBZAEY24lkw5bZC8qYsmpfEXomZCvxMOTi5zR3GdzVm8oLFbxaRU9AEPH3x09PdNpGyoGY4uzoW8YCjNOQUF7s9Ttzwsr0TF9wZDZD";
+
+      if (!pixelId || !accessToken) {
+        return res.status(400).json({ success: false, error: "Meta Pixel credentials missing on backend." });
+      }
+
+      // Hashing helpers for user data to respect privacy standards
+      const sha256 = (val: any) => {
+        if (!val) return undefined;
+        const strVal = String(val).trim().toLowerCase();
+        if (!strVal) return undefined;
+        return crypto.createHash("sha256").update(strVal).digest("hex");
+      };
+
+      const cleanPhoneAndHash = (phone: any) => {
+        if (!phone) return undefined;
+        const digits = String(phone).replace(/\D/g, "");
+        if (!digits) return undefined;
+        return crypto.createHash("sha256").update(digits).digest("hex");
+      };
+
+      // Get Client IP and User Agent
+      let clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || "";
+      if (Array.isArray(clientIp)) {
+        clientIp = clientIp[0];
+      } else if (typeof clientIp === 'string') {
+        clientIp = clientIp.split(',')[0].trim();
+      }
+      
+      const clientUserAgent = req.headers['user-agent'] || "";
+
+      // Prepare CAPI User Data payload
+      const fbUserData: any = {
+        client_ip_address: clientIp || undefined,
+        client_user_agent: clientUserAgent || undefined,
+      };
+
+      // Map client passed user details if available (e.g. at purchase)
+      if (userData) {
+        if (userData.email) {
+          const hashedEmail = sha256(userData.email);
+          if (hashedEmail) fbUserData.em = [hashedEmail];
+        }
+        if (userData.phone) {
+          const hashedPhone = cleanPhoneAndHash(userData.phone);
+          if (hashedPhone) fbUserData.ph = [hashedPhone];
+        }
+        if (userData.firstName) {
+          const hashedFn = sha256(userData.firstName);
+          if (hashedFn) fbUserData.fn = [hashedFn];
+        }
+        if (userData.lastName) {
+          const hashedLn = sha256(userData.lastName);
+          if (hashedLn) fbUserData.ln = [hashedLn];
+        }
+        if (userData.city) {
+          const hashedCity = sha256(userData.city);
+          if (hashedCity) fbUserData.ct = [hashedCity];
+        }
+        if (userData.country) {
+          const hashedCountry = sha256(userData.country.substring(0, 2)); // Use ISO country code if possible
+          if (hashedCountry) fbUserData.country = [hashedCountry];
+        }
+      }
+
+      const capiEvent = {
+        event_name: eventName,
+        event_time: Math.floor(Date.now() / 1000),
+        event_id: eventId,
+        event_source_url: eventSourceUrl || "https://www.nuvagroup.online/",
+        action_source: "website",
+        user_data: fbUserData,
+        custom_data: customData || undefined,
+      };
+
+      const capiPayload = {
+        data: [capiEvent]
+      };
+
+      console.log(`[Meta CAPI Backend] Dispatching event: ${eventName} (${eventId}) to Pixel ${pixelId}`);
+
+      const capiResponse = await fetch(`https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+        },
+        body: JSON.stringify(capiPayload)
+      });
+
+      const capiResult = await capiResponse.json();
+      console.log("[Meta CAPI Result]", capiResult);
+
+      return res.json({ success: true, metaResponse: capiResult });
+    } catch (e: any) {
+      console.error("[Meta CAPI Proxy Endpoint Error]", e);
+      return res.status(500).json({ success: false, error: e.message });
+    }
+  });
+
   app.post("/api/send-order", async (req, res) => {
     try {
       const dbOrder = req.body;

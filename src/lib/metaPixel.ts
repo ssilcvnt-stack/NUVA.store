@@ -9,6 +9,39 @@ declare global {
 export const META_PIXEL_ID = (import.meta as any).env?.VITE_META_PIXEL_ID || "1001496935926927"; // Default NUVA Meta Pixel ID
 
 /**
+ * Generate a unique event ID for deduplication between Pixel and Conversions API
+ */
+export const generateEventId = () => {
+  return "evt_" + Date.now() + "_" + Math.random().toString(36).substring(2, 11);
+};
+
+/**
+ * Send event data asynchronously to our backend Conversions API proxy endpoint
+ */
+const sendCapiEvent = async (eventName: string, eventId: string, customData?: any, userData?: any) => {
+  try {
+    const payload = {
+      eventName,
+      eventId,
+      eventSourceUrl: typeof window !== "undefined" ? window.location.href : "",
+      customData,
+      userData
+    };
+    
+    // Background fetch to avoid blocking the main UI thread
+    fetch("/api/meta-event", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    }).catch(err => {
+      console.warn("[Meta CAPI] Error sending event to proxy backend:", err);
+    });
+  } catch (e) {
+    console.warn("[Meta CAPI] Event dispatch failed:", e);
+  }
+};
+
+/**
  * Initializes the Meta Pixel script dynamically in the document head.
  */
 export const initMetaPixel = (pixelId: string = META_PIXEL_ID) => {
@@ -40,7 +73,10 @@ export const initMetaPixel = (pixelId: string = META_PIXEL_ID) => {
 
   if (window.fbq) {
     window.fbq("init", pixelId);
-    window.fbq("track", "PageView");
+    // Initial PageView
+    const eventId = generateEventId();
+    window.fbq("track", "PageView", {}, { eventID: eventId });
+    sendCapiEvent("PageView", eventId);
     console.log(`[Meta Pixel] Initialized with ID: ${pixelId}`);
   }
 };
@@ -49,69 +85,87 @@ export const initMetaPixel = (pixelId: string = META_PIXEL_ID) => {
  * Track PageView event
  */
 export const trackPageView = () => {
+  const eventId = generateEventId();
   if (typeof window !== "undefined" && window.fbq) {
-    window.fbq("track", "PageView");
+    window.fbq("track", "PageView", {}, { eventID: eventId });
   }
+  sendCapiEvent("PageView", eventId);
 };
 
 /**
  * Track ViewContent event (when a user views a product page)
  */
 export const trackViewContent = (productName: string, productId: string, value: number, currency: string = "AOA") => {
+  const eventId = generateEventId();
+  const customData = {
+    content_name: productName,
+    content_ids: [productId],
+    content_type: "product",
+    value: value,
+    currency: currency,
+  };
+
   if (typeof window !== "undefined" && window.fbq) {
-    window.fbq("track", "ViewContent", {
-      content_name: productName,
-      content_ids: [productId],
-      content_type: "product",
-      value: value,
-      currency: currency,
-    });
+    window.fbq("track", "ViewContent", customData, { eventID: eventId });
     console.log(`[Meta Pixel] Tracked ViewContent: ${productName} (${value} ${currency})`);
   }
+  sendCapiEvent("ViewContent", eventId, customData);
 };
 
 /**
  * Track AddToCart event
  */
 export const trackAddToCart = (productName: string, productId: string, value: number, currency: string = "AOA") => {
+  const eventId = generateEventId();
+  const customData = {
+    content_name: productName,
+    content_ids: [productId],
+    content_type: "product",
+    value: value,
+    currency: currency,
+  };
+
   if (typeof window !== "undefined" && window.fbq) {
-    window.fbq("track", "AddToCart", {
-      content_name: productName,
-      content_ids: [productId],
-      content_type: "product",
-      value: value,
-      currency: currency,
-    });
+    window.fbq("track", "AddToCart", customData, { eventID: eventId });
     console.log(`[Meta Pixel] Tracked AddToCart: ${productName} (${value} ${currency})`);
   }
+  sendCapiEvent("AddToCart", eventId, customData);
 };
 
 /**
  * Track InitiateCheckout event
  */
-export const trackInitiateCheckout = (value: number, numItems: number, currency: string = "AOA") => {
+export const trackInitiateCheckout = (value: number, numItems: number, currency: string = "AOA", userData?: any) => {
+  const eventId = generateEventId();
+  const customData = {
+    value: value,
+    num_items: numItems,
+    currency: currency,
+  };
+
   if (typeof window !== "undefined" && window.fbq) {
-    window.fbq("track", "InitiateCheckout", {
-      value: value,
-      num_items: numItems,
-      currency: currency,
-    });
+    window.fbq("track", "InitiateCheckout", customData, { eventID: eventId });
     console.log(`[Meta Pixel] Tracked InitiateCheckout: Value: ${value} ${currency}, Items: ${numItems}`);
   }
+  sendCapiEvent("InitiateCheckout", eventId, customData, userData);
 };
 
 /**
  * Track Purchase event
  */
-export const trackPurchase = (value: number, currency: string = "AOA", transactionId: string, itemsCount: number) => {
+export const trackPurchase = (value: number, currency: string = "AOA", transactionId: string, itemsCount: number, userData?: any) => {
+  const eventId = "order_" + transactionId; // Unique matching identifier for perfect browser/server deduplication
+  const customData = {
+    value: value,
+    currency: currency,
+    content_type: "product",
+    num_items: itemsCount,
+    order_id: transactionId,
+  };
+
   if (typeof window !== "undefined" && window.fbq) {
-    window.fbq("track", "Purchase", {
-      value: value,
-      currency: currency,
-      content_type: "product",
-      num_items: itemsCount,
-      order_id: transactionId,
-    });
+    window.fbq("track", "Purchase", customData, { eventID: eventId });
     console.log(`[Meta Pixel] Tracked Purchase: Value: ${value} ${currency}, ID: ${transactionId}`);
   }
+  sendCapiEvent("Purchase", eventId, customData, userData);
 };
