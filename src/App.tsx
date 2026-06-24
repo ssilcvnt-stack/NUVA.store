@@ -34,6 +34,8 @@ import { OrderSuccessState } from "./components/OrderSuccessState";
 import { OrderTracking } from "./components/OrderTracking";
 import { NewsletterSection } from "./components/NewsletterSection";
 import { WhatsAppOrderModal } from "./components/WhatsAppOrderModal";
+import { CookieBanner } from "./components/CookieBanner";
+import { LegalModal } from "./components/LegalModal";
 
 import { PRODUCTS, BRAND_VALUES, IMAGES, SIZE_TABLE, formatPrice } from "./data";
 import { Product, CartItem, ProductColor, Order } from "./types";
@@ -56,6 +58,9 @@ export default function App() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
   const [isWhatsAppCartModalOpen, setIsWhatsAppCartModalOpen] = useState(false);
+  
+  // Legal Modals State
+  const [activeLegalModal, setActiveLegalModal] = useState<"privacy" | "cookies" | "terms" | null>(null);
   
   // Single product home-customization states
   const singleProduct = PRODUCTS[0];
@@ -908,16 +913,65 @@ export default function App() {
             </div>
             
             <div className="flex space-x-4 text-[10px] font-sans text-neutral-400">
-              <a href="#privacy" className="hover:underline">Privacidade Estrita</a>
+              <button onClick={() => setActiveLegalModal("privacy")} className="hover:underline">Privacidade Estrita</button>
               <span>•</span>
-              <a href="#cookies" className="hover:underline">Cookies</a>
+              <button onClick={() => setActiveLegalModal("cookies")} className="hover:underline">Cookies</button>
               <span>•</span>
-              <a href="#terms" className="hover:underline">Termos Editoriais</a>
+              <button onClick={() => setActiveLegalModal("terms")} className="hover:underline">Termos Editoriais</button>
             </div>
           </div>
 
         </div>
       </footer>
+
+      {/* Cookie Consent Banner */}
+      <CookieBanner />
+
+      {/* Legal Modals */}
+      <LegalModal
+        isOpen={activeLegalModal === "privacy"}
+        onClose={() => setActiveLegalModal(null)}
+        title="Política de Privacidade"
+      >
+        <p>A <strong>NUVA</strong> compromete-se a proteger e respeitar a sua privacidade. Esta política (juntamente com os nossos termos de utilização e quaisquer outros documentos nela referidos) estabelece a base pela qual quaisquer dados pessoais que recolhemos de si, ou que nos fornece, serão processados por nós.</p>
+        <h4 className="font-semibold text-black mt-6 mb-2">1. INFORMAÇÕES QUE PODEMOS RECOLHER DE SI</h4>
+        <p>Podemos recolher e processar os seguintes dados sobre si: Informações que fornece ao preencher formulários no nosso site ou ao efetuar um pedido via WhatsApp. Isto inclui informações fornecidas ao registar-se para usar o nosso site, subscrever o nosso serviço, publicar material ou solicitar serviços adicionais.</p>
+        <h4 className="font-semibold text-black mt-6 mb-2">2. UTILIZAÇÃO DAS INFORMAÇÕES</h4>
+        <p>Utilizamos as informações detidas sobre si para os seguintes fins: Para garantir que o conteúdo do nosso site é apresentado da forma mais eficaz para si e para o seu computador. Para lhe fornecer informações, produtos ou serviços que nos solicite ou que consideramos poderem interessar-lhe, caso tenha consentido em ser contactado para esses fins.</p>
+        <h4 className="font-semibold text-black mt-6 mb-2">3. OS SEUS DIREITOS</h4>
+        <p>Tem o direito de nos pedir para não processar os seus dados pessoais para fins de marketing. O nosso site pode, de tempos a tempos, conter links para e de sites das nossas redes de parceiros e afiliados.</p>
+      </LegalModal>
+
+      <LegalModal
+        isOpen={activeLegalModal === "cookies"}
+        onClose={() => setActiveLegalModal(null)}
+        title="Política de Cookies"
+      >
+        <p>O nosso website utiliza cookies para o distinguir de outros utilizadores do nosso site. Isto ajuda-nos a proporcionar-lhe uma boa experiência ao navegar no nosso site e também nos permite melhorar o nosso site.</p>
+        <h4 className="font-semibold text-black mt-6 mb-2">1. O QUE SÃO COOKIES?</h4>
+        <p>Um cookie é um pequeno ficheiro de letras e números que guardamos no seu browser ou no disco rígido do seu computador se concordar. Os cookies contêm informações que são transferidas para o disco rígido do seu computador.</p>
+        <h4 className="font-semibold text-black mt-6 mb-2">2. COOKIES QUE UTILIZAMOS</h4>
+        <ul className="list-disc pl-5 space-y-2">
+          <li><strong>Cookies estritamente necessários.</strong> São cookies necessários para o funcionamento do nosso website.</li>
+          <li><strong>Cookies analíticos/de desempenho.</strong> Permitem-nos reconhecer e contar o número de visitantes e ver como os visitantes se movem no nosso site quando o estão a utilizar.</li>
+          <li><strong>Cookies de funcionalidade.</strong> São usados para o reconhecer quando regressa ao nosso website.</li>
+          <li><strong>Cookies de segmentação.</strong> Estes cookies registam a sua visita ao nosso site, as páginas que visitou e as hiperligações que seguiu.</li>
+        </ul>
+      </LegalModal>
+
+      <LegalModal
+        isOpen={activeLegalModal === "terms"}
+        onClose={() => setActiveLegalModal(null)}
+        title="Termos de Utilização"
+      >
+        <p>Bem-vindo ao website da NUVA. Se continuar a navegar e a utilizar este website, concorda em cumprir e estar vinculado aos seguintes termos e condições de utilização.</p>
+        <h4 className="font-semibold text-black mt-6 mb-2">1. TERMOS GERAIS</h4>
+        <p>O conteúdo das páginas deste website destina-se apenas à sua informação geral e utilização. Está sujeito a alterações sem aviso prévio.</p>
+        <h4 className="font-semibold text-black mt-6 mb-2">2. PROPRIEDADE E DIREITOS DE AUTOR</h4>
+        <p>Este website contém material que é propriedade nossa ou licenciado a nós. Este material inclui, mas não se limita ao design, layout, aparência, aspeto e gráficos. A reprodução é proibida, exceto de acordo com o aviso de direitos de autor, que faz parte destes termos e condições.</p>
+        <h4 className="font-semibold text-black mt-6 mb-2">3. COMPRAS E ENCOMENDAS</h4>
+        <p>Ao realizar uma encomenda, está a propor a compra de um produto de acordo com estes termos. Todas as encomendas estão sujeitas à disponibilidade e confirmação do preço da encomenda.</p>
+      </LegalModal>
 
       {/* Interactive Size Guide Advisor Modal overlay popup */}
       <SizeGuideModal
