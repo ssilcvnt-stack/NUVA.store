@@ -5,7 +5,6 @@
 
 import React from "react";
 import { Check, Download, AlertCircle, ShoppingBag, Truck, Printer } from "lucide-react";
-import { jsPDF } from "jspdf";
 import { Order } from "../types";
 import { formatPrice } from "../data";
 
@@ -44,7 +43,8 @@ export function OrderSuccessState({
     }
   }
 
-  const downloadReceipt = () => {
+  const downloadReceipt = async () => {
+    const { jsPDF } = await import("jspdf");
     const doc = new jsPDF();
     
     // Configurações de layout

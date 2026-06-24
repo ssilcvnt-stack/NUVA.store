@@ -969,7 +969,19 @@ export default function App() {
 
       {/* WhatsApp Floating Contact Button */}
       <a 
-        href="https://wa.me/244941429171" 
+        href={(() => {
+          let message = "";
+          if (cartItems.length > 0) {
+            const subtotal = cartItems.reduce((sum, item) => sum + (item.selectedColor.priceOverride || item.product.price) * item.quantity, 0);
+            message = `Olá! Gostaria de fazer uma encomenda:\n\n` + 
+                      cartItems.map(item => `- ${item.quantity}x ${item.product.name} (${item.selectedColor.name}, Tam: ${item.selectedSize}) - ${formatPrice((item.selectedColor.priceOverride || item.product.price) * item.quantity)}`).join('\n') +
+                      `\n\nTotal estimado: ${formatPrice(subtotal)}`;
+          } else {
+            const sizeText = homeSize ? `, Tam: ${homeSize}` : '';
+            message = `Olá! Gostaria de saber mais sobre o produto ${singleProduct.name} (${homeColor.name}${sizeText}).`;
+          }
+          return `https://wa.me/244941429171?text=${encodeURIComponent(message)}`;
+        })()}
         target="_blank" 
         rel="noopener noreferrer" 
         className="fixed bottom-6 right-6 md:bottom-8 md:right-8 z-40 bg-[#25D366] text-white p-3.5 md:p-4 rounded-full shadow-lg hover:scale-110 hover:shadow-2xl hover:bg-[#20bd5a] transition-all duration-300 flex items-center justify-center animate-fade-in group"
