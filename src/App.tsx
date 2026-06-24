@@ -33,6 +33,7 @@ import { CheckoutSection } from "./components/CheckoutSection";
 import { OrderSuccessState } from "./components/OrderSuccessState";
 import { OrderTracking } from "./components/OrderTracking";
 import { NewsletterSection } from "./components/NewsletterSection";
+import { WhatsAppOrderModal } from "./components/WhatsAppOrderModal";
 
 import { PRODUCTS, BRAND_VALUES, IMAGES, SIZE_TABLE, formatPrice } from "./data";
 import { Product, CartItem, ProductColor, Order } from "./types";
@@ -53,6 +54,8 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+  const [isWhatsAppCartModalOpen, setIsWhatsAppCartModalOpen] = useState(false);
   
   // Single product home-customization states
   const singleProduct = PRODUCTS[0];
@@ -649,9 +652,7 @@ export default function App() {
                           setHomeSizeError(true);
                           return;
                         }
-                        const price = homeColor.priceOverride || singleProduct.price;
-                        const message = `Olá! Gostaria de fazer uma encomenda do produto:\n- ${homeQty}x ${singleProduct.name} (${homeColor.name}, Tam: ${homeSize})\n\nTotal estimado: ${formatPrice(price * homeQty)}`;
-                        window.open(`https://wa.me/244941429171?text=${encodeURIComponent(message)}`, '_blank');
+                        setIsWhatsAppModalOpen(true);
                       }}
                       className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 text-[11px] uppercase tracking-widest font-mono font-medium transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer"
                     >
@@ -924,6 +925,22 @@ export default function App() {
         onClose={() => setIsSizeGuideOpen(false)}
       />
 
+      {/* WhatsApp Order Modal */}
+      <WhatsAppOrderModal
+        isOpen={isWhatsAppModalOpen}
+        onClose={() => setIsWhatsAppModalOpen(false)}
+        product={singleProduct}
+        color={homeColor}
+        size={homeSize}
+        quantity={homeQty}
+      />
+
+      <WhatsAppOrderModal
+        isOpen={isWhatsAppCartModalOpen}
+        onClose={() => setIsWhatsAppCartModalOpen(false)}
+        cartItems={cartItems}
+      />
+
       {/* Cart lateral Drawer Overlay slide-out */}
       <CartDrawer
         isOpen={isCartOpen}
@@ -938,6 +955,10 @@ export default function App() {
           trackInitiateCheckout(totalValue, totalItems, "AOA");
           setView("checkout");
           window.scrollTo({ top: 0, behavior: "smooth" });
+        }}
+        onWhatsAppCheckout={() => {
+          setIsCartOpen(false);
+          setIsWhatsAppCartModalOpen(true);
         }}
       />
 

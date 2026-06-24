@@ -15,6 +15,7 @@ interface CartDrawerProps {
   onUpdateQuantity: (itemId: string, delta: number) => void;
   onRemoveItem: (itemId: string) => void;
   onCheckout: () => void;
+  onWhatsAppCheckout?: () => void;
 }
 
 export function CartDrawer({
@@ -23,7 +24,8 @@ export function CartDrawer({
   cartItems,
   onUpdateQuantity,
   onRemoveItem,
-  onCheckout
+  onCheckout,
+  onWhatsAppCheckout
 }: CartDrawerProps) {
   if (!isOpen) return null;
 
@@ -195,10 +197,14 @@ export function CartDrawer({
             <button
               type="button"
               onClick={() => {
-                const message = `Olá! Gostaria de fazer uma encomenda:\n\n` + 
-                  cartItems.map(item => `- ${item.quantity}x ${item.product.name} (${item.selectedColor.name}, Tam: ${item.selectedSize}) - ${formatPrice((item.selectedColor.priceOverride || item.product.price) * item.quantity)}`).join('\n') +
-                  `\n\nTotal estimado: ${formatPrice(subtotal)}`;
-                window.open(`https://wa.me/244941429171?text=${encodeURIComponent(message)}`, '_blank');
+                if (onWhatsAppCheckout) {
+                  onWhatsAppCheckout();
+                } else {
+                  const message = `Olá! Gostaria de fazer uma encomenda:\n\n` + 
+                    cartItems.map(item => `- ${item.quantity}x ${item.product.name} (${item.selectedColor.name}, Tam: ${item.selectedSize}) - ${formatPrice((item.selectedColor.priceOverride || item.product.price) * item.quantity)}`).join('\n') +
+                    `\n\nTotal estimado: ${formatPrice(subtotal)}`;
+                  window.open(`https://wa.me/244941429171?text=${encodeURIComponent(message)}`, '_blank');
+                }
               }}
               className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 text-[11px] uppercase tracking-[0.2em] transition-colors flex items-center justify-center gap-2 font-semibold mt-3"
               id="whatsapp-checkout-btn"
