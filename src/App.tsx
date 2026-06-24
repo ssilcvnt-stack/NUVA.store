@@ -622,7 +622,22 @@ export default function App() {
                   </div>
 
                   {/* Primary purchase actions */}
-                  <div className="space-y-3 pt-2">
+                  <div className="space-y-3 pt-2 flex flex-col">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!homeSize) {
+                          setHomeSizeError(true);
+                          return;
+                        }
+                        handleAddToCart(singleProduct, homeColor, homeSize, homeQty);
+                        setView("checkout");
+                      }}
+                      className="w-full py-4 bg-black hover:bg-neutral-900 text-white text-[11px] uppercase tracking-widest font-mono font-medium transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      Comprar Agora
+                    </button>
+
                     <button
                       type="button"
                       onClick={() => {
@@ -638,7 +653,7 @@ export default function App() {
                         }, 2000);
                       }}
                       disabled={homeAdded}
-                      className="w-full py-4 bg-black hover:bg-neutral-900 text-white text-[11px] uppercase tracking-widest font-mono font-medium transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full py-4 bg-transparent border border-black hover:bg-neutral-50 text-black text-[11px] uppercase tracking-widest font-mono font-medium transition-colors duration-300 flex items-center justify-center gap-2 cursor-pointer"
                       id="add-to-cart-homepage-btn"
                     >
                       {homeAdded ? (
@@ -650,23 +665,6 @@ export default function App() {
                         <span>{homeColor.isPreOrder ? "Reservar (Stock Limitado)" : "Adicionar ao Carrinho"}</span>
                       )}
                     </button>
-                    
-                    <div className="text-center">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!homeSize) {
-                            setHomeSizeError(true);
-                            return;
-                          }
-                          handleAddToCart(singleProduct, homeColor, homeSize, homeQty);
-                          setView("checkout");
-                        }}
-                        className="text-[10px] text-neutral-400 hover:text-black underline tracking-wide font-mono transition-colors"
-                      >
-                        Comprar agora
-                      </button>
-                    </div>
                   </div>
 
                 </div>
