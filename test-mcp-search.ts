@@ -7,9 +7,17 @@ async function testRPC() {
       jsonrpc: "2.0",
       method: "tools/call",
       params: {
-        name: "COMPOSIO_GET_TOOL_SCHEMAS",
+        name: "COMPOSIO_MULTI_EXECUTE_TOOL",
         arguments: {
-           tool_slugs: ["GOOGLESHEETS_CREATE_GOOGLE_SHEET1"]
+          entity_id: "ssilcvnt@gmail.com",
+          tools: [
+            {
+              tool_slug: "GOOGLESHEETS_SEARCH_SPREADSHEETS",
+              arguments: {
+                max_results: 10
+              }
+            }
+          ]
         }
       },
       id: 1

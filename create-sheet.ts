@@ -1,4 +1,6 @@
-async function testRPC() {
+import { ComposioToolSet } from "composio-core";
+
+async function createSheet() {
   try {
     const composioUrl = process.env.COMPOSIO_URL;
     const composioKey = process.env.COMPOSIO_API_KEY;
@@ -7,9 +9,16 @@ async function testRPC() {
       jsonrpc: "2.0",
       method: "tools/call",
       params: {
-        name: "COMPOSIO_GET_TOOL_SCHEMAS",
+        name: "COMPOSIO_MULTI_EXECUTE_TOOL",
         arguments: {
-           tool_slugs: ["GOOGLESHEETS_CREATE_GOOGLE_SHEET1"]
+          tools: [
+            {
+              tool_slug: "GOOGLESHEETS_CREATE_GOOGLE_SHEET1",
+              arguments: {
+                title: "NUVA LABS - Pedidos"
+              }
+            }
+          ]
         }
       },
       id: 1
@@ -25,9 +34,11 @@ async function testRPC() {
       },
       body: JSON.stringify(body)
     });
+    
+    console.log("Status:", res.status);
     console.log("Response:", await res.text());
   } catch (e) {
-    console.error("Fetch error:", e);
+    console.error(e);
   }
 }
-testRPC();
+createSheet();

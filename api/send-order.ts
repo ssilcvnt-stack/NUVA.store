@@ -152,32 +152,60 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       </div>
     `;
 
+    const toolsList: any[] = [
+      {
+        tool_slug: "GMAIL_SEND_EMAIL",
+        arguments: {
+          to: "ssilcvnt@gmail.com",
+          subject: `Novo Pedido NUVA LABS (${dbOrder.id})`,
+          body: emailBodyHTML,
+          is_html: true
+        }
+      },
+      {
+        tool_slug: "GMAIL_SEND_EMAIL",
+        arguments: {
+          to: "nuva2026@proton.me",
+          subject: `Novo Pedido NUVA LABS (${dbOrder.id})`,
+          body: emailBodyHTML,
+          is_html: true
+        }
+      }
+    ];
+
+    const sheetId = process.env.GOOGLE_SHEET_ID || "16pfzV7nyyOA8eJrpFUEIoRllpz3Rf1CTTXfWS_qotW8";
+    if (sheetId) {
+      toolsList.push({
+        tool_slug: "GOOGLESHEETS_UPSERT_ROWS",
+        arguments: {
+          spreadsheetId: sheetId,
+          sheetName: "Página1",
+          keyColumn: "ID",
+          headers: ["ID", "Data", "Nome", "Email", "Telefone", "Morada", "Pagamento", "Total", "Artigos"],
+          rows: [
+            [
+              dbOrder.id,
+              dbOrder.createdAt || new Date().toLocaleString('pt-PT'),
+              `${dbOrder.customerInfo.firstName} ${dbOrder.customerInfo.lastName}`,
+              dbOrder.customerInfo.email,
+              dbOrder.customerInfo.phone,
+              `${dbOrder.customerInfo.address}, ${dbOrder.customerInfo.city}`,
+              paymentMethodText,
+              dbOrder.total,
+              dbOrder.items.map((i: any) => `${i.quantity}x ${i.product.name} (${i.selectedColor.name}, Tam: ${i.selectedSize})`).join(" | ")
+            ]
+          ]
+        }
+      });
+    }
+
     const bodyAction = {
       jsonrpc: "2.0",
       method: "tools/call",
       params: {
         name: "COMPOSIO_MULTI_EXECUTE_TOOL",
         arguments: {
-          tools: [
-            {
-              tool_slug: "GMAIL_SEND_EMAIL",
-              arguments: {
-                to: "ssilcvnt@gmail.com",
-                subject: `Novo Pedido NUVA LABS (${dbOrder.id})`,
-                body: emailBodyHTML,
-                is_html: true
-              }
-            },
-            {
-              tool_slug: "GMAIL_SEND_EMAIL",
-              arguments: {
-                to: "nuva2026@proton.me",
-                subject: `Novo Pedido NUVA LABS (${dbOrder.id})`,
-                body: emailBodyHTML,
-                is_html: true
-              }
-            }
-          ]
+          tools: toolsList
         }
       },
       id: 1
