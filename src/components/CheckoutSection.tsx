@@ -222,7 +222,7 @@ export function CheckoutSection({
                   </h3>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wide text-neutral-500 mb-1">
                       Nome *
@@ -251,7 +251,7 @@ export function CheckoutSection({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-[10px] font-mono uppercase tracking-wide text-neutral-500 mb-1">
                       Email *
@@ -294,7 +294,7 @@ export function CheckoutSection({
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   <div className="col-span-1">
                     <label className="block text-[10px] font-mono uppercase tracking-wide text-neutral-500 mb-1">
                       Código Postal (Opcional)

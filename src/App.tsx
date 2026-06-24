@@ -20,7 +20,9 @@ import {
   Sparkles,
   Info,
   Check,
-  Mail
+  Mail,
+  Menu,
+  X
 } from "lucide-react";
 
 import { Logo, MiniLogo } from "./components/Logo";
@@ -50,6 +52,7 @@ export default function App() {
   const [favorites, setFavorites] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Single product home-customization states
   const singleProduct = PRODUCTS[0];
@@ -283,7 +286,7 @@ export default function App() {
           </nav>
 
           {/* Actions & Utilities - Right */}
-          <div className="flex items-center justify-end space-x-2 md:space-x-6">
+          <div className="flex items-center justify-end space-x-1 sm:space-x-2 md:space-x-6">
             {/* Sizing Link for Mobile removed or handled */}
 
             {/* Shopping cart trigger */}
@@ -303,9 +306,67 @@ export default function App() {
                 </span>
               )}
             </button>
+
+            {/* Hamburger menu for mobile */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className={`md:hidden p-2 transition-all duration-300 rounded ${
+                view === "home" && !isScrolled ? "text-white hover:opacity-60" : "text-black hover:bg-neutral-50"
+              }`}
+              aria-label="Menu"
+              id="mobile-hamburger-trigger"
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5 stroke-[1.5]" /> : <Menu className="h-5 w-5 stroke-[1.5]" />}
+            </button>
           </div>
         </div>
       </header>
+
+      {/* Mobile Navigation Menu Overlay */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-white flex flex-col justify-center items-center text-center p-6 animate-fade-in md:hidden" id="mobile-menu-overlay">
+          <div className="space-y-8 flex flex-col items-center">
+            <button 
+              onClick={() => {
+                window.location.hash = "/camiseta";
+                setIsMobileMenuOpen(false);
+              }}
+              className="text-lg lowercase tracking-[0.2em] font-medium text-black hover:opacity-70 transition-all font-semibold"
+            >
+              a camiseta
+            </button>
+            <button 
+              onClick={() => {
+                window.location.hash = "/filosofia";
+                setIsMobileMenuOpen(false);
+              }}
+              className="text-lg lowercase tracking-[0.2em] font-medium text-black hover:opacity-70 transition-all font-semibold"
+            >
+              filosofia
+            </button>
+            <button 
+              onClick={() => {
+                window.location.hash = "/rastrear";
+                setIsMobileMenuOpen(false);
+              }}
+              className="text-lg lowercase tracking-[0.2em] font-medium text-black hover:opacity-70 transition-all font-semibold"
+            >
+              rastrear pedido
+            </button>
+            
+            <button
+              onClick={() => {
+                setIsMobileMenuOpen(false);
+                setIsCartOpen(true);
+              }}
+              className="mt-4 flex items-center gap-2 text-xs font-mono uppercase tracking-widest bg-black text-white px-6 py-3"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              <span>Ver Carrinho ({cartItems.reduce((sum, item) => sum + item.quantity, 0)})</span>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 3. Main Application Workspace Area */}
       <main className={`flex-grow ${view !== "home" ? "pt-24 sm:pt-28" : ""}`}>
@@ -315,20 +376,26 @@ export default function App() {
           <div className="pb-20 animate-fade-in" id="home-view-container">
             
             {/* Full Screen Hero Block */}
-            <section className="w-full h-screen select-none relative overflow-hidden bg-black" id="hero-section">
+            <section className="w-full select-none relative overflow-hidden bg-neutral-100" id="hero-section">
+              {/* Invisible spacer image to force the container's responsive height naturally, matching the video section */}
+              <img 
+                src={IMAGES.heroImages[0]} 
+                className="w-full object-cover max-h-[80vh] md:max-h-[90vh] lg:max-h-screen opacity-0 pointer-events-none"
+                alt="spacer"
+              />
               {IMAGES.heroImages.map((src, idx) => (
                 <img
                   key={src}
                   src={src}
                   alt={`NUVA Editorial Presentation ${idx + 1}`}
-                  className={`absolute inset-0 w-full h-full object-cover object-center transition-opacity duration-[1500ms] ease-in-out ${
+                  className={`absolute inset-0 w-full h-full object-cover object-[center_center] md:object-[80%_center] transition-opacity duration-[1500ms] ease-in-out ${
                     idx === heroImageIndex ? "opacity-100 z-10" : "opacity-0 z-0"
                   }`}
                   referrerPolicy="no-referrer"
                 />
               ))}
               {/* Subtle top gradient overlay for reading floating text with elite contrast */}
-              <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-20" />
+              <div className="absolute inset-x-0 top-0 h-32 md:h-40 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-20" />
             </section>
 
             {/* Subtle Brand Ethos banner quote */}
@@ -387,16 +454,16 @@ export default function App() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 bg-white">
                 
                 {/* 1. Left Gallery Showroom with Left Vertical Thumbnails */}
-                <div className="lg:col-span-6 flex gap-4 items-start">
+                <div className="lg:col-span-6 flex flex-col-reverse md:flex-row gap-4 items-start w-full">
                   
                   {/* Vertical Showcase Thumbnail list */}
-                  <div className="flex flex-col gap-3 w-16 sm:w-20 shrink-0 select-none">
+                  <div className="flex flex-row md:flex-col gap-3 w-full md:w-20 shrink-0 overflow-x-auto py-1 md:py-0 scrollbar-none select-none">
                     {(homeColor.images || [homeColor.image]).map((imgUrl, idx) => (
                       <button
                         key={idx}
                         type="button"
                         onClick={() => setHomeActiveImageIndex(idx)}
-                        className={`aspect-3/4 border overflow-hidden relative cursor-pointer transition-all duration-300 w-full ${homeActiveImageIndex === idx ? "border-black scale-[0.98] ring-1 ring-black/10" : "border-neutral-200 hover:border-black/50 opacity-85 hover:opacity-100"}`}
+                        className={`aspect-3/4 border overflow-hidden relative cursor-pointer transition-all duration-300 w-14 sm:w-16 md:w-full shrink-0 ${homeActiveImageIndex === idx ? "border-black scale-[0.98] ring-1 ring-black/10" : "border-neutral-200 hover:border-black/50 opacity-85 hover:opacity-100"}`}
                         title={`${homeColor.name} - Ângulo ${idx + 1}`}
                       >
                         <img 
@@ -410,7 +477,7 @@ export default function App() {
                   </div>
 
                   {/* Main Showcase Color Photo on Right */}
-                  <div className="flex-grow relative aspect-3/4 bg-brand-offwhite border border-neutral-100 overflow-hidden select-none">
+                  <div className="flex-grow w-full relative aspect-3/4 bg-brand-offwhite border border-neutral-100 overflow-hidden select-none">
                     <img
                       src={homeColor.images && homeColor.images[homeActiveImageIndex] ? homeColor.images[homeActiveImageIndex] : homeColor.image}
                       alt={`${singleProduct.name} - ${homeColor.name}`}
@@ -444,7 +511,7 @@ export default function App() {
                     <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-400 font-semibold">
                       Cor:
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {singleProduct.colors.map((color) => (
                         <button
                           key={color.id}
@@ -479,8 +546,8 @@ export default function App() {
                   </ul>
 
                   {/* Inline Size Chart Table completely matching screenshot */}
-                  <div className="pt-2">
-                    <table className="w-full text-left font-mono text-[9px] text-neutral-500 border-collapse select-text">
+                  <div className="pt-2 overflow-x-auto w-full">
+                    <table className="w-full text-left font-mono text-[9px] text-neutral-500 border-collapse select-text min-w-[300px]">
                       <thead>
                         <tr className="border-b border-neutral-200">
                           <th className="py-1.5 uppercase font-medium">tamanho</th>
@@ -507,7 +574,7 @@ export default function App() {
                     <span className="block text-[10px] font-mono uppercase tracking-wider text-neutral-400 font-semibold">
                       Tamanho:
                     </span>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                       {singleProduct.sizes.map((size) => (
                         <button
                           key={size}
