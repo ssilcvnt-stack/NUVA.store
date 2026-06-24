@@ -668,7 +668,7 @@ export default function App() {
             {/* Immersive Video Banner */}
             <section className="w-full mt-16 md:mt-24 select-none bg-neutral-100">
               <video 
-                src="/banner-video.mp4" 
+                src="/fica a par dar novidades (4).mp4" 
                 autoPlay 
                 loop 
                 muted 
